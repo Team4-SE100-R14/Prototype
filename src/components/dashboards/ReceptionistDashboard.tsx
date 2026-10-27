@@ -317,7 +317,7 @@ export default function ReceptionistDashboard({ user, onLogout }: Props) {
     if (patient.complaint.trim().length < 3) nextErrors.complaint = "Vui lòng nhập lý do khám tối thiểu 3 ký tự."
     if (!patient.triage) nextErrors.triage = "Chọn phân loại tuyến khám để tiếp tục."
     setErrors(nextErrors)
-    if (Object.keys(nextErrors).length) return
+    if (Object.keys(nextErrors).length || !patient.triage) return
     if (patient.cccd === "079456789123" && patient.id !== "BN-26-0001") {
       setDuplicate(true)
       return
