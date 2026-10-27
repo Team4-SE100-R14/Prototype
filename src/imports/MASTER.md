@@ -21,14 +21,13 @@ HPMS harmonizes:
 
 ---
 
-## 2. 7-Role Architecture & Business Taxonomy
-*(Kiến trúc 7 Vai trò & Phân định Nghiệp vụ)*
+## 2. 6-Role Architecture & Business Taxonomy
+*(Kiến trúc 6 Vai trò & Phân định Nghiệp vụ)*
 
 HPMS enforces strict Role-Based Access Control (RBAC — *Kiểm soát truy cập dựa trên vai trò*). Each role has a distinct visual badge, UI density profile, and functional responsibility across the patient care continuum (*chuỗi chăm sóc sức khỏe liên tục*).
 
 | Role Key | Role Name (VI / EN) | Primary Environment & Hardware | Visual Badge Token | UI Density Profile | Core Business Domain & Responsibilities |
 |:---|:---|:---|:---|:---|:---|
-| `superadmin` | Quản trị viên cấp cao / Superadmin | IT Office (Desktop 2K/4K) | Purple (`#7C3AED` / `#F5F3FF`) | Compact Analytics | System infrastructure, tenant configuration, cryptographic key management, global RBAC permissions, audit log surveillance (*giám sát nhật ký kiểm toán*), and NEWS2 clinical trigger threshold configuration. |
 | `admin` | Quản trị viên bệnh viện / Hospital Admin | KHTH & Operations (Desktop) | Slate Navy (`#1E293B` / `#F1F5F9`) | Dense Dashboard | Bed occupancy quotas (*công suất giường bệnh*), clinic shift rosters, ICD-10 & medication formularies (*danh mục thuốc*), service pricing, clinic queue overload management (>40 patients/shift). |
 | `physician` | Bác sĩ khám chữa bệnh / Physician | Consultation Room & Ward (Desktop/Tablet) | Deep Cyan (`#0E7490` / `#ECFEFF`) | Clinical Workstation | Outpatient diagnosis (ICD-10 autocomplete), AI diagnostic suggestions, paraclinical (CLS) order placement, electronic prescribing with allergy/interaction interceptors, inpatient clinical orders (*y lệnh nội trú*), record signing & locking (Thông tư 46/2018/TT-BYT). |
 | `nurse` | Điều dưỡng viên / Nurse | Ward Station & Mobile Cart (Tablet/Terminal) | Teal Emerald (`#0D9488` / `#F0FDFA`) | High-Contrast Touch | Initial vital signs intake, periodic NEWS2 vital calculations, ward bed matrix management (*sơ đồ giường bệnh*), critical vital alert receipt, 3-minute escalation protocol response (*xử lý cảnh báo leo thang*), execution of doctor orders. |
@@ -39,7 +38,7 @@ HPMS enforces strict Role-Based Access Control (RBAC — *Kiểm soát truy cậ
 ---
 
 ## 3. End-to-End Patient Lifecycle & Business Flow Matrix
-*(Chu trình khám chữa bệnh & Ma trận phân định trách nhiệm 7 vai trò)*
+*(Chu trình khám chữa bệnh & Ma trận phân định trách nhiệm 6 vai trò)*
 
 ```mermaid
 sequenceDiagram
@@ -49,7 +48,7 @@ sequenceDiagram
     actor N as Nurse (Điều dưỡng)
     actor DR as Physician (Bác sĩ)
     actor T as Paraclinical Tech (KTV Cận lâm sàng)
-    actor A as Admin/Superadmin
+    actor A as Admin
 
     P->>R: Quét CCCD/VNeID tại quầy tiếp đón
     R->>N: Phân luồng tiếp nhận & Tạo phiếu khám
@@ -87,7 +86,6 @@ sequenceDiagram
 
 ### 4.2 Role Indicator Badges
 Every authenticated user's UI displays a role badge in the top navigation bar to prevent accidental operations under wrong user contexts:
-- **Superadmin**: `bg-purple-50 text-purple-700 border-purple-200` (Icon: `ShieldCheck`)
 - **Admin**: `bg-slate-100 text-slate-800 border-slate-300` (Icon: `BuildingOffice2`)
 - **Physician**: `bg-cyan-50 text-cyan-800 border-cyan-300` (Icon: `Stethoscope`)
 - **Nurse**: `bg-teal-50 text-teal-800 border-teal-300` (Icon: `HeartPulse`)
