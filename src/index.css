@@ -1,0 +1,94 @@
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-display: 'Figtree', sans-serif;
+  --font-body: 'Noto Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --color-brand-primary: #0891B2;
+  --color-brand-deep: #0E7490;
+  --color-brand-surface: #ECFEFF;
+  --color-canvas: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-subsurface: #F1F5F9;
+  --color-border-subtle: #E2E8F0;
+  --color-border-strong: #CBD5E1;
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #334155;
+  --color-text-muted: #64748B;
+
+  --color-critical: #DC2626;
+  --color-critical-bg: #FEF2F2;
+  --color-critical-border: #FCA5A5;
+  --color-urgent: #EA580C;
+  --color-urgent-bg: #FFF7ED;
+  --color-warning: #D97706;
+  --color-warning-bg: #FFFBEB;
+  --color-normal: #059669;
+  --color-normal-bg: #ECFDF5;
+  --color-info: #2563EB;
+  --color-info-bg: #EFF6FF;
+}
+
+:root {
+  font-family: 'Noto Sans', sans-serif;
+  background-color: #F8FAFC;
+  color: #0F172A;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Figtree', sans-serif;
+}
+
+.font-mono, code, .clinical-data {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+/* Focus rings */
+*:focus-visible {
+  outline: 2px solid #0891B2;
+  outline-offset: 2px;
+}
+
+/* Clinical severity utilities */
+.severity-critical { background: #FEF2F2; border-color: #FCA5A5; color: #DC2626; }
+.severity-urgent { background: #FFF7ED; border-color: #FDBA74; color: #EA580C; }
+.severity-warning { background: #FFFBEB; border-color: #FCD34D; color: #D97706; }
+.severity-normal { background: #ECFDF5; border-color: #A7F3D0; color: #059669; }
+.severity-info { background: #EFF6FF; border-color: #BFDBFE; color: #2563EB; }
+
+@keyframes alert-red {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(220 38 38 / 0); }
+  45% { box-shadow: 0 0 0 5px rgb(220 38 38 / 0.22); }
+}
+
+@keyframes alert-yellow {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(217 119 6 / 0); }
+  45% { box-shadow: 0 0 0 5px rgb(217 119 6 / 0.2); }
+}
+
+@keyframes bell-shake {
+  0%, 100% { transform: rotate(0); }
+  20%, 60% { transform: rotate(14deg); }
+  40%, 80% { transform: rotate(-14deg); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-alert-red { animation: alert-red 0.75s ease-in-out 4; }
+.animate-alert-yellow { animation: alert-yellow 0.75s ease-in-out 4; }
+.animate-bell { display: inline-flex; animation: bell-shake 0.5s ease-in-out 2; transform-origin: top center; }
+.animate-fade-in { animation: fade-in 0.35s ease-out both; }
