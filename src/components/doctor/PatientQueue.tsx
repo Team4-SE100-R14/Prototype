@@ -4,6 +4,7 @@ import TopNav from "../TopNav"
 import Button from "../ui/Button"
 import Icon from "../ui/Icon"
 import { CLINICAL_PATIENTS } from "../../lib/clinicalWorkflow"
+import IntakeQueueBoard from "../intake/IntakeQueueBoard"
 
 export default function PatientQueue({
   user,
@@ -79,6 +80,10 @@ export default function PatientQueue({
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="mb-6">
+          <IntakeQueueBoard user={user} />
         </div>
 
         <section className="overflow-hidden rounded-xl border border-border-subtle bg-surface shadow-sm">

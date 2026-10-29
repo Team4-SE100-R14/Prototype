@@ -11,14 +11,24 @@ import Button from "../ui/Button"
 import Icon from "../ui/Icon"
 import { TextArea, TextInput } from "../ui/TextInput"
 import TopNav from "../TopNav"
+import IntakeTriagePanel from "../intake/IntakeTriagePanel"
+import useIntakeQueue from "../../hooks/useIntakeQueue"
+import {
+  destinationLabel,
+  enqueueEncounter,
+  formatWait,
+  startConsultation,
+  validateIntake,
+  type Acuity,
+  type IntakeEncounter,
+} from "../../lib/intakeQueue"
 
 interface Props {
   user: AuthUser
   onLogout: () => void
 }
 
-type Triage = "emergency" | "outpatient"
-type QueueFilter = "all" | Triage
+type QueueFilter = "all" | Acuity
 
 interface PatientForm {
   id: string
@@ -32,16 +42,8 @@ interface PatientForm {
   insurance: string
   address: string
   complaint: string
-  triage: Triage | ""
-}
-
-interface QueuePatient {
-  id: string
-  order: number
-  name: string
-  triage: Triage
-  destination: string
-  wait: string
+  clinic: string
+  acuity: Acuity | ""
 }
 
 const INITIAL_PATIENT: PatientForm = {
@@ -56,67 +58,9 @@ const INITIAL_PATIENT: PatientForm = {
   insurance: "",
   address: "12 Nguyễn Trãi, Quận 1, TP. Hồ Chí Minh",
   complaint: "Sốt cao liên tục 3 ngày, đau mỏi cơ",
-  triage: "",
+  clinic: "",
+  acuity: "",
 }
-
-const INITIAL_QUEUE: QueuePatient[] = [
-  {
-    id: "BN-26-0089",
-    order: 1,
-    name: "Lê Hoàng Long",
-    triage: "emergency",
-    destination: "Khoa Cấp cứu",
-    wait: "3 phút trước",
-  },
-  {
-    id: "BN-26-0087",
-    order: 2,
-    name: "Trần Thị Thanh",
-    triage: "emergency",
-    destination: "Khoa Cấp cứu",
-    wait: "5 phút trước",
-  },
-  {
-    id: "BN-26-0081",
-    order: 3,
-    name: "Phạm Quốc Minh",
-    triage: "emergency",
-    destination: "Khoa Cấp cứu",
-    wait: "8 phút trước",
-  },
-  {
-    id: "BN-26-0078",
-    order: 4,
-    name: "Vũ Thị Hồng",
-    triage: "emergency",
-    destination: "Khoa Cấp cứu",
-    wait: "11 phút trước",
-  },
-  {
-    id: "BN-26-0094",
-    order: 5,
-    name: "Nguyễn Minh Anh",
-    triage: "outpatient",
-    destination: "Khoa Khám ngoại trú - PK Tim mạch",
-    wait: "6 phút trước",
-  },
-  {
-    id: "BN-26-0093",
-    order: 6,
-    name: "Đỗ Văn Nam",
-    triage: "outpatient",
-    destination: "Khoa Khám ngoại trú - PK Hô hấp",
-    wait: "9 phút trước",
-  },
-  {
-    id: "BN-26-0091",
-    order: 7,
-    name: "Bùi Thu Hà",
-    triage: "outpatient",
-    destination: "Khoa Khám ngoại trú - PK Nội tổng quát",
-    wait: "14 phút trước",
-  },
-]
 
 const INPUT =
   "w-full rounded-lg border border-border-subtle bg-canvas px-3 py-2.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-primary"
@@ -239,27 +183,26 @@ function MaskedField({
 
 export default function ReceptionistDashboard({ user, onLogout }: Props) {
   const [patient, setPatient] = useState(INITIAL_PATIENT)
-  const [queue, setQueue] = useState(INITIAL_QUEUE)
+  const queue = useIntakeQueue()
   const [filter, setFilter] = useState<QueueFilter>("all")
   const [search, setSearch] = useState("")
   const [notice, setNotice] = useState("")
   const [idSequence, setIdSequence] = useState(1)
-  const [selected, setSelected] = useState<QueuePatient | null>(null)
+  const [selected, setSelected] = useState<IntakeEncounter | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [duplicate, setDuplicate] = useState(false)
   const [searchMatch, setSearchMatch] = useState(false)
   const [success, setSuccess] = useState("")
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(5)
+  const waiting = queue.filter((item) => item.status === "DangCho")
   const counts = {
-    all: 28 + queue.length - INITIAL_QUEUE.length,
-    emergency:
-      4 + queue.filter((item) => item.triage === "emergency").length - 4,
-    outpatient:
-      24 + queue.filter((item) => item.triage === "outpatient").length - 3,
+    all: waiting.length,
+    emergency: waiting.filter((item) => item.acuity === "EMERGENCY").length,
+    outpatient: waiting.filter((item) => item.acuity === "NON_EMERGENCY").length,
   }
   const filteredQueue = useMemo(
-    () => queue.filter((item) => filter === "all" || item.triage === filter),
+    () => queue.filter((item) => filter === "all" || item.acuity === filter),
     [filter, queue],
   )
   const totalPages = Math.max(1, Math.ceil(filteredQueue.length / pageSize))
@@ -289,7 +232,8 @@ export default function ReceptionistDashboard({ user, onLogout }: Props) {
       complaint: "",
       insurance: "",
       address: "",
-      triage: "",
+      clinic: "",
+      acuity: "",
     })
     setErrors({})
     setDuplicate(false)
@@ -314,39 +258,35 @@ export default function ReceptionistDashboard({ user, onLogout }: Props) {
     if (!patient.emergencyContact.trim()) nextErrors.emergencyContact = "Vui lòng nhập người liên hệ khẩn cấp."
     if (!patient.emergencyPhone.trim()) nextErrors.emergencyPhone = "Vui lòng nhập SĐT liên hệ khẩn cấp."
     if (!patient.address.trim()) nextErrors.address = "Vui lòng nhập địa chỉ."
-    if (patient.complaint.trim().length < 3) nextErrors.complaint = "Vui lòng nhập lý do khám tối thiểu 3 ký tự."
-    if (!patient.triage) nextErrors.triage = "Chọn phân loại tuyến khám để tiếp tục."
+    const intake = {
+      maBenhNhan: patient.id,
+      hoTen: patient.name,
+      lyDoKham: patient.complaint,
+      acuity: patient.acuity,
+      clinic: patient.clinic,
+    }
+    Object.assign(nextErrors, validateIntake(intake, { requirePatient: true }))
+    delete nextErrors.hoTen
+    delete nextErrors.maBenhNhan
     setErrors(nextErrors)
-    if (Object.keys(nextErrors).length || !patient.triage) return
+    if (Object.keys(nextErrors).length || !patient.acuity) return
     if (patient.cccd === "079456789123" && patient.id !== "BN-26-0001") {
       setDuplicate(true)
       return
     }
-    const emergency = patient.triage === "emergency"
-    const destination = emergency ? "Khoa Cấp cứu" : "Khoa Khám ngoại trú"
-    const next: QueuePatient = {
-      id: patient.id,
-      order: emergency ? 1 : counts.all + 1,
-      name: patient.name,
-      triage: patient.triage,
-      destination,
-      wait: "Vừa tiếp nhận",
-    }
-    setQueue((current) => {
-      const adjusted = emergency
-        ? current.map((item) => ({ ...item, order: item.order + 1 }))
-        : current
-      return emergency ? [next, ...adjusted] : [...adjusted, next]
-    })
+    const created = enqueueEncounter(intake, user)
+    if (!created) return
+    const emergency = created.acuity === "EMERGENCY"
+    const destination = destinationLabel(created)
     setNotice(
       emergency
-        ? `Đã đưa ${patient.name} vào Khoa Cấp cứu với ưu tiên 1 và gửi thông báo tức thì đến kíp trực.`
+        ? `Đã đưa ${patient.name} vào ${destination} với ưu tiên 1 và gửi thông báo tức thì đến kíp trực.`
         : `Đã đưa ${patient.name} vào hàng đợi ${destination}.`,
     )
     setSuccess(
       emergency
-        ? "Đã đưa vào hàng đợi: Khoa Cấp cứu – Ưu tiên 1 (UT 1)."
-        : "Đã đưa vào hàng đợi: Khoa Khám ngoại trú – Ưu tiên 2 (STT 25).",
+        ? `Đã đưa vào hàng đợi: ${destination} – Ưu tiên 1 (STT ${created.soThuTu}).`
+        : `Đã đưa vào hàng đợi: ${destination} – Ưu tiên 2 (STT ${created.soThuTu}).`,
     )
   }
   const cancel = () => {
@@ -592,124 +532,12 @@ export default function ReceptionistDashboard({ user, onLogout }: Props) {
                   Phân loại lâm sàng &amp; Định tuyến khoa phòng (tự động)
                 </h2>
               </div>
-              <div className="space-y-4">
-                <Field label="Lý do khám / Triệu chứng ban đầu" required error={errors.complaint}>
-                  <TextArea
-                    value={patient.complaint}
-                    onChange={(event) =>
-                      update("complaint", event.target.value.slice(0, 255))
-                    }
-                    rows={4}
-                    maxLength={255}
-                    placeholder="Sốt cao liên tục 3 ngày, đau mỏi cơ"
-                    aria-invalid={!!errors.complaint}
-                    className={errors.complaint ? "border-critical" : ""}
-                  />
-                </Field>
-                <fieldset>
-                  <legend className="mb-2 text-xs font-semibold text-text-secondary">
-                    Phân loại tuyến khám{" "}
-                    <span className="text-critical">*</span>
-                  </legend>
-                  <div className="grid gap-3">
-                    <label
-                      className={`cursor-pointer rounded-xl border p-4 transition-colors ${
-                        patient.triage === "emergency"
-                          ? "border-critical bg-critical-bg ring-1 ring-critical"
-                          : "border-critical-border bg-surface hover:bg-critical-bg"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="triage"
-                        value="emergency"
-                        checked={patient.triage === "emergency"}
-                        onChange={() => update("triage", "emergency")}
-                        className="sr-only"
-                      />
-                      <span className="flex items-start gap-3">
-                        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-critical text-surface">
-                          <Icon className="h-5 w-5">
-                            <path d="M12 3L2 21h20L12 3zm0 6v5m0 3h.01" />
-                          </Icon>
-                        </span>
-                        <span>
-                          <strong className="block text-sm text-critical">
-                            CẤP CỨU (EMERGENCY)
-                          </strong>
-                          <span className="mt-1 block text-xs leading-relaxed text-text-secondary">
-                            Ưu tiên mức 1. Tự động định tuyến thẳng vào Khoa Cấp
-                            cứu, kích hoạt thông báo SSE tức thì đến kíp trực
-                            cấp cứu.
-                          </span>
-                        </span>
-                      </span>
-                    </label>
-                    <label
-                      className={`cursor-pointer rounded-xl border p-4 transition-colors ${
-                        patient.triage === "outpatient"
-                          ? "border-info bg-info-bg ring-1 ring-info"
-                          : "border-border-subtle bg-surface hover:bg-info-bg"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="triage"
-                        value="outpatient"
-                        checked={patient.triage === "outpatient"}
-                        onChange={() => update("triage", "outpatient")}
-                        className="sr-only"
-                      />
-                      <span className="flex items-start gap-3">
-                        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-info text-surface">
-                          <Icon className="h-5 w-5">
-                            <path d="M4 20v-7a3 3 0 013-3h10a3 3 0 013 3v7M9 10V4h6v6" />
-                          </Icon>
-                        </span>
-                        <span>
-                          <strong className="block text-sm text-info">
-                            KHÔNG CẤP CỨU (NON-EMERGENCY)
-                          </strong>
-                          <span className="mt-1 block text-xs leading-relaxed text-text-secondary">
-                            Ưu tiên mức 2. Tự động định tuyến vào Khoa Khám
-                            ngoại trú.
-                          </span>
-                        </span>
-                      </span>
-                    </label>
-                  </div>
-                </fieldset>
-                {!patient.triage && (
-                  <p className="text-xs font-medium text-text-muted">Chọn phân loại tuyến khám để tiếp tục.</p>
-                )}
-                <Field label="Khoa/Phòng chỉ định (hệ thống tự động gán)">
-                  <div className="rounded-xl border border-border-subtle bg-canvas p-4" aria-live="polite">
-                    {!patient.triage ? (
-                      <p className="text-sm font-medium text-text-muted">— Chưa chọn phân loại —</p>
-                    ) : patient.triage === "emergency" ? (
-                      <div>
-                        <div className="flex flex-wrap gap-2">
-                          <span className="rounded-full bg-critical-bg px-3 py-1.5 text-xs font-semibold text-critical">Khoa Cấp cứu</span>
-                          <span className="rounded-full bg-critical px-3 py-1.5 text-xs font-semibold text-surface">Ưu tiên 1 (MucUuTien=1)</span>
-                        </div>
-                        <p className="mt-3 text-xs leading-relaxed text-text-secondary">
-                          Tự động định tuyến thẳng, thông báo SSE &lt;= 1.0s tới kíp cấp cứu.
-                        </p>
-                      </div>
-                    ) : (
-                      <div>
-                        <div className="flex flex-wrap gap-2">
-                          <span className="rounded-full bg-info-bg px-3 py-1.5 text-xs font-semibold text-info">Khoa Khám ngoại trú</span>
-                          <span className="rounded-full bg-info px-3 py-1.5 text-xs font-semibold text-surface">Ưu tiên 2 (MucUuTien=2)</span>
-                        </div>
-                        <p className="mt-3 text-xs leading-relaxed text-text-secondary">
-                          Xếp hàng FIFO theo số thứ tự (SoThuTu).
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </Field>
-              </div>
+              <IntakeTriagePanel
+                idPrefix="reception"
+                value={{ complaint: patient.complaint, acuity: patient.acuity, clinic: patient.clinic }}
+                errors={errors}
+                onChange={(patch) => setPatient((current) => ({ ...current, ...patch }))}
+              />
             </section>
             <div className="sticky bottom-0 flex flex-col-reverse gap-2 border-t border-border-subtle bg-canvas/95 px-5 py-4 backdrop-blur sm:flex-row sm:justify-end">
               <Button
@@ -720,8 +548,8 @@ export default function ReceptionistDashboard({ user, onLogout }: Props) {
                 Hủy bỏ
               </Button>
               <div>
-                <Button type="submit" disabled={!patient.triage}>Lưu &amp; Đưa vào hàng đợi</Button>
-                {!patient.triage && <p className="mt-1.5 text-xs text-text-muted">Chọn phân loại tuyến khám để tiếp tục.</p>}
+                <Button type="submit" disabled={!patient.acuity}>Lưu &amp; Đưa vào hàng đợi</Button>
+                {!patient.acuity && <p className="mt-1.5 text-xs text-text-muted">Chọn phân loại tuyến khám để tiếp tục.</p>}
               </div>
             </div>
           </div>
@@ -779,11 +607,11 @@ export default function ReceptionistDashboard({ user, onLogout }: Props) {
                   label: `Tất cả hàng đợi (${counts.all})`,
                 },
                 {
-                  id: "emergency" as const,
+                  id: "EMERGENCY" as const,
                   label: `Khoa Cấp cứu (Ưu tiên 1) (${counts.emergency})`,
                 },
                 {
-                  id: "outpatient" as const,
+                  id: "NON_EMERGENCY" as const,
                   label: `Khoa Khám ngoại trú (Ưu tiên 2) (${counts.outpatient})`,
                 },
               ].map((tab) => (
@@ -815,6 +643,7 @@ export default function ReceptionistDashboard({ user, onLogout }: Props) {
                     "Phân loại",
                     "Khoa / Phòng chỉ định",
                     "Thời gian chờ",
+                    "Trạng thái",
                     "Thao tác",
                   ].map((column) => (
                     <th
@@ -831,49 +660,62 @@ export default function ReceptionistDashboard({ user, onLogout }: Props) {
                   <tr
                     key={item.id}
                     className={`border-b border-border-subtle last:border-0 ${
-                      item.triage === "emergency"
+                      item.acuity === "EMERGENCY"
                         ? "bg-critical-bg/40"
                         : "hover:bg-canvas"
                     }`}
                   >
                     <td className="whitespace-nowrap px-4 py-4">
                       <span className="font-mono font-semibold text-text-primary">
-                        {String(item.order).padStart(2, "0")} - {item.id}
+                        {String(item.soThuTu).padStart(2, "0")} - {item.maBenhNhan}
                       </span>
-                      {item.triage === "emergency" && (
+                      {item.acuity === "EMERGENCY" && (
                         <span className="ml-2 rounded bg-critical px-1.5 py-0.5 text-xs font-bold text-surface">
                           ƯT 1
                         </span>
                       )}
                     </td>
                     <td className="whitespace-nowrap px-4 py-4 font-semibold text-text-primary">
-                      {item.name}
+                      {item.hoTen}
                     </td>
                     <td className="px-4 py-4">
                       <span
                         className={`rounded-full px-2.5 py-1 text-xs font-bold ${
-                          item.triage === "emergency"
+                          item.acuity === "EMERGENCY"
                             ? "bg-critical text-surface"
                             : "bg-info-bg text-info"
                         }`}
                       >
-                        {item.triage === "emergency" ? "CẤP CỨU" : "NGOẠI TRÚ"}
+                        {item.acuity === "EMERGENCY" ? "CẤP CỨU" : "NGOẠI TRÚ"}
                       </span>
                     </td>
                     <td className="min-w-48 px-4 py-4 text-xs leading-relaxed text-text-secondary">
-                      {item.destination}
+                      {destinationLabel(item)}
                     </td>
                     <td className="whitespace-nowrap px-4 py-4 font-mono text-xs text-text-muted">
-                      {item.wait}
+                      {formatWait(item.createdAt)}
+                    </td>
+                    <td className="px-4 py-4">
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                          item.status === "DangCho"
+                            ? "bg-warning-bg text-warning"
+                            : "bg-normal-bg text-normal"
+                        }`}
+                      >
+                        {item.status === "DangCho" ? "Đang chờ" : "Đang khám"}
+                      </span>
                     </td>
                     <td className="whitespace-nowrap px-4 py-4">
                       <div className="flex gap-2">
                         <Button
-                          onClick={() =>
-                            setNotice(
-                              `Đã chuyển yêu cầu điều phối ${item.id} đến ${item.destination}.`,
-                            )
-                          }
+                          disabled={item.status !== "DangCho"}
+                          onClick={() => {
+                            if (startConsultation(item.id, user))
+                              setNotice(
+                                `Đã điều phối ${item.maBenhNhan} đến ${destinationLabel(item)} (Đang khám).`,
+                              )
+                          }}
                           className="px-3 py-2 text-xs"
                         >
                           Điều phối
@@ -972,7 +814,7 @@ export default function ReceptionistDashboard({ user, onLogout }: Props) {
                   Chi tiết lượt chờ
                 </h2>
                 <p className="mt-1 font-mono text-xs text-text-muted">
-                  {selected.id}
+                  {selected.maBenhNhan} · {selected.id}
                 </p>
               </div>
               <button
@@ -988,19 +830,22 @@ export default function ReceptionistDashboard({ user, onLogout }: Props) {
             </div>
             <div className="space-y-3 p-5 text-sm text-text-secondary">
               <p>
-                <strong>Họ và tên:</strong> {selected.name}
+                <strong>Họ và tên:</strong> {selected.hoTen}
               </p>
               <p>
                 <strong>Phân loại:</strong>{" "}
-                {selected.triage === "emergency"
+                {selected.acuity === "EMERGENCY"
                   ? "Cấp cứu - Ưu tiên mức 1"
                   : "Ngoại trú - Ưu tiên mức 2"}
               </p>
               <p>
-                <strong>Định tuyến:</strong> {selected.destination}
+                <strong>Lý do khám:</strong> {selected.lyDoKham}
               </p>
               <p>
-                <strong>Thời gian chờ:</strong> {selected.wait}
+                <strong>Định tuyến:</strong> {destinationLabel(selected)}
+              </p>
+              <p>
+                <strong>Thời gian chờ:</strong> {formatWait(selected.createdAt)}
               </p>
             </div>
             <div className="border-t border-border-subtle bg-canvas p-4 text-right">
