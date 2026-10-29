@@ -4,6 +4,10 @@ const variants = {
   primary:
     "bg-brand-primary text-surface shadow-sm hover:bg-brand-deep disabled:bg-subsurface disabled:text-text-muted",
   ghost: "text-text-secondary hover:bg-subsurface",
+  secondary:
+    "border border-border-subtle bg-surface text-text-secondary hover:border-brand-primary hover:text-brand-deep disabled:opacity-45",
+  report:
+    "bg-normal text-surface shadow-sm hover:bg-normal/90 disabled:bg-subsurface disabled:text-text-muted",
   danger:
     "border border-critical-border bg-surface text-critical hover:bg-critical-bg",
   destructive:

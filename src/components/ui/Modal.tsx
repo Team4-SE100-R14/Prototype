@@ -9,6 +9,7 @@ export default function Modal({
   onClose,
   dismissible = true,
   backdrop = "default",
+  widthClass = "max-w-2xl",
 }: {
   children: ReactNode
   titleId: string
@@ -16,6 +17,7 @@ export default function Modal({
   onClose: () => void
   dismissible?: boolean
   backdrop?: "default" | "workstation"
+  widthClass?: string
 }) {
   const panel = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -86,7 +88,7 @@ export default function Modal({
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
         aria-modal="true"
-        className="max-h-full w-full max-w-2xl overflow-y-auto rounded-xl border border-border-subtle bg-surface shadow-2xl"
+        className={`max-h-full w-full ${widthClass} overflow-y-auto rounded-xl border border-border-subtle bg-surface shadow-2xl`}
         role="dialog"
       >
         {children}
