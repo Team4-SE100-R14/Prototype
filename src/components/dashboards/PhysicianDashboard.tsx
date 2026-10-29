@@ -6,6 +6,7 @@ import WardVitalWorkspace, {
 import ClinicalExamPage from "../doctor/ClinicalExamPage"
 import PatientQueue from "../doctor/PatientQueue"
 import EmergencyArrivalBanner from "../intake/EmergencyArrivalBanner"
+import InpatientWorkspace from "../inpatient/InpatientWorkspace"
 import PrescriptionWorkspace from "../prescription/PrescriptionWorkspace"
 import TopNav from "../TopNav"
 import Button from "../ui/Button"
@@ -17,7 +18,7 @@ interface Props {
   onLogout: () => void
 }
 
-type Workspace = "clinical" | "prescription" | "beds" | "alerts"
+type Workspace = "clinical" | "prescription" | "inpatient" | "beds" | "alerts"
 type NavigationIntent = {
   workspace: Workspace
   examOpen?: boolean
@@ -46,6 +47,16 @@ const NAV_ITEMS: Array<{
       <>
         <path d="M9 4h6a2 2 0 0 1 2 2v14H7V6a2 2 0 0 1 2-2Z" />
         <path d="M9 9h6M9 13h6M9 17h3" />
+      </>
+    ),
+  },
+  {
+    id: "inpatient",
+    label: "Nội trú",
+    icon: (
+      <>
+        <path d="M4 5v14M20 10v9M4 15h16M6 10h12a2 2 0 0 1 2 2v3H4v-3a2 2 0 0 1 2-2Z" />
+        <path d="M7 10V8h4v2" />
       </>
     ),
   },
@@ -250,7 +261,7 @@ export default function PhysicianDashboard(props: Props) {
 
         <div className="min-w-0 flex-1">
           <div className="border-b border-border-subtle bg-surface p-3 lg:hidden">
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
               {NAV_ITEMS.map((item) => {
                 const active = workspace === item.id
                 return (
@@ -332,6 +343,10 @@ export default function PhysicianDashboard(props: Props) {
               }}
             />
           </div>
+
+          {workspace === "inpatient" && (
+            <InpatientWorkspace user={props.user} />
+          )}
 
           <div
             className={

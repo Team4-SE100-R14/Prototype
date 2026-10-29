@@ -3,16 +3,18 @@ import type { AuthUser } from '../../App'
 import WardVitalWorkspace from '../clinical/WardVitalWorkspace'
 import EmergencyArrivalBanner from '../intake/EmergencyArrivalBanner'
 import IntakeQueueBoard from '../intake/IntakeQueueBoard'
+import InpatientWorkspace from '../inpatient/InpatientWorkspace'
 import TopNav from '../TopNav'
 import Button from '../ui/Button'
 
 interface Props { user: AuthUser; onLogout: () => void }
 
-type Workspace = 'beds' | 'alerts' | 'intake'
+type Workspace = 'beds' | 'alerts' | 'inpatient' | 'intake'
 
 const TABS: Array<{ id: Workspace; label: string }> = [
   { id: 'beds', label: 'Giường bệnh & Sinh hiệu' },
   { id: 'alerts', label: 'Danh sách cảnh báo' },
+  { id: 'inpatient', label: 'Nội trú & Xếp giường' },
   { id: 'intake', label: 'Hàng đợi tiếp nhận' },
 ]
 
@@ -38,7 +40,7 @@ export default function NurseDashboard({ user, onLogout }: Props) {
           ))}
         </div>
       </div>
-      <div className={workspace === 'intake' ? 'hidden' : 'block'}>
+      <div className={workspace === 'intake' || workspace === 'inpatient' ? 'hidden' : 'block'}>
         <WardVitalWorkspace
           user={user}
           onLogout={onLogout}
@@ -47,6 +49,7 @@ export default function NurseDashboard({ user, onLogout }: Props) {
           onRequestedViewChange={view => setWorkspace(view)}
         />
       </div>
+      {workspace === 'inpatient' && <InpatientWorkspace user={user} />}
       {workspace === 'intake' && (
         <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6">
           <IntakeQueueBoard user={user} />

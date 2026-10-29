@@ -13,7 +13,8 @@ Tài liệu này hướng dẫn chạy và demo các module theo SRS:
 | PRES | Kê đơn điện tử và kiểm tra an toàn thuốc | 3 |
 | REC | Ghi nhận sinh hiệu và cảnh báo tại giường bệnh | 4 |
 | Quản trị | Dashboard quản trị bệnh viện, nhật ký kiểm toán | 8 |
-| INCARE, REPORT | Nội trú, báo cáo thống kê | 9 (chỉ có một phần) |
+| INCARE | Chỉ định nhập viện, xếp giường, chuyển giường, bệnh án nội trú, xuất viện | 9 |
+| REPORT | Báo cáo RPT-01, 02, 03, 06 và xuất CSV (RPT-05 là nhật ký kiểm toán ở mục 8) | 10 |
 
 ## 1. Chạy prototype
 
@@ -215,20 +216,85 @@ Dữ liệu phiếu chỉ định, phiếu khám dùng chung qua localStorage c�
 | Công suất giường bệnh | Bảng công suất giường |
 | Ca trực bác sĩ | Lịch trực trong ngày |
 | Danh mục thuốc | Danh mục thuốc của bệnh viện |
+| Báo cáo & Thống kê | RPT-01, 02, 03, 06 (xem mục 10) |
 | Nhật ký kiểm toán | Tra cứu nhật ký theo khoảng thời gian, người thực hiện, hành động, kết quả, từ khóa; mỗi dòng có **Xem Diff JSON**; nhật ký chỉ ghi thêm (append-only) |
 
-Nhật ký kiểm toán cũng hiện các sự kiện bảo mật do prototype ghi lại (ví dụ truy cập bị từ chối ở mục 5.5).
+Nhật ký kiểm toán cũng hiện các sự kiện bảo mật do prototype ghi lại (ví dụ truy cập bị từ chối ở mục 5.5), các thao tác nội trú (mục 9) và việc xuất báo cáo (mục 10).
 
-## 9. INCARE và REPORT – chỉ có một phần
+## 9. Demo INCARE – Điều trị nội trú
 
-Prototype **chưa có** màn hình riêng cho các yêu cầu sau:
+Luồng nội trú dùng một kho dữ liệu chung trong `localStorage` (khóa `hpms-inpatient-v1`), nên thao tác của vai trò này hiện ngay ở vai trò khác trong cùng trình duyệt. Luồng đầy đủ: **chỉ định nhập viện → hàng chờ xếp giường → xếp giường → bệnh án nội trú (ghi diễn biến, chuyển giường) → xuất viện**.
 
-- **INCARE** (nội trú): chưa có luồng tạo bệnh án nội trú, phân giường, chuyển phòng, ghi diễn tiến hằng ngày và xuất viện. Phần gần nhất là **Bảng giường bệnh** của module REC (mục 4) và tab **Công suất giường bệnh** của quản trị viên (mục 8).
-- **REPORT** (báo cáo thống kê): chưa có báo cáo tổng hợp lượt khám, công suất giường, phân bố bệnh theo ICD-10, xu hướng sinh hiệu, vi phạm an toàn thuốc hay xuất báo cáo. Phần duy nhất có là **Nhật ký kiểm toán** (RPT-05) ở mục 8.
+| Vai trò | Vào ở đâu | Được làm gì |
+|---|---|---|
+| Bác sĩ (`dat.nguyen`) | **Khám và chẩn đoán** → mở phiếu khám → **Chỉ định nhập viện**; mục **Nội trú** ở thanh bên trái | Tất cả: chỉ định nhập viện, xếp giường, chuyển giường, ghi diễn biến, **xuất viện** |
+| Điều dưỡng (`mai.le`) | Tab **Nội trú & Xếp giường** | Xếp giường, chuyển giường, ghi diễn biến, **Đánh dấu sẵn sàng** cho giường bảo trì. Nút **Xuất viện** bị khóa |
+| Quản trị viên | Không có màn hình nội trú | Xem kết quả qua báo cáo RPT-02 và nhật ký kiểm toán |
 
-## 10. Lưu ý khi demo
+Bác sĩ khác điều dưỡng ở hai điểm: chỉ bác sĩ được xuất viện và chỉ định nhập viện; chỉ điều dưỡng được đánh dấu giường sẵn sàng (bác sĩ bấm sẽ nhận thông báo 403).
+
+### 9.1 Chỉ định nhập viện
+
+1. Đăng nhập `dat.nguyen`, vào **Khám và chẩn đoán**, bấm **Gọi khám** ở bệnh nhân Nguyễn Văn A (BN-2026-0901).
+2. Ở thanh dưới phiếu khám bấm **Chỉ định nhập viện**. Hộp thoại tự điền sẵn mã ICD-10 và chẩn đoán từ phiếu khám.
+3. Chọn **Khoa điều trị** (bác sĩ tự được chọn nếu thuộc khoa đó), nhập chẩn đoán tối thiểu 5 ký tự, bấm **Xác nhận nhập viện**.
+4. Hệ thống sinh mã `BA-26-xxxx` tăng dần và đưa người bệnh vào hàng chờ xếp giường của khoa. Nút trên phiếu khám đổi thành **Nội trú: BA-26-xxxx**.
+5. **Chống trùng:** bệnh nhân đã có bệnh án nội trú chưa xuất viện thì lần chỉ định thứ hai báo lỗi "Không thể tạo bệnh án mới" và ghi một dòng *Thất bại* vào nhật ký. Sau khi bệnh án cũ xuất viện mới tạo lại được.
+
+### 9.2 Bảng giường và xếp giường
+
+Vào mục **Nội trú**. Bảng có 15 giường (5 phòng, 3 khoa) và danh sách **Chờ xếp giường** (3 người bệnh có sẵn, cộng người vừa chỉ định). Các chip Trống / Đang sử dụng / Bảo trì được tính từ dữ liệu thật; bộ lọc khoa, phòng và ô tìm theo tên, mã bệnh nhân, mã giường đều hoạt động.
+
+- Bấm **Xếp giường** trên một người đang chờ, hoặc bấm vào một giường **Sẵn sàng** để xếp người đang chờ của khoa đó vào chính giường ấy. Chỉ chọn được giường trống thuộc **đúng khoa** của bệnh án.
+- Sau khi xác nhận: giường chuyển **Đang sử dụng**, người bệnh rời hàng chờ, bệnh án chuyển **Đang điều trị**.
+- Giường đang bảo trì có nút **Đánh dấu sẵn sàng** (chỉ điều dưỡng).
+- Giường có cảnh báo (G-KNOI-201B vàng, G-KNOI-202A đỏ) hiện biểu tượng cảnh báo khi di chuột.
+
+### 9.3 Bệnh án nội trú
+
+Bấm **⋮ → Xem bệnh án** trên giường đang dùng. Bệnh án có bốn tab:
+
+- **Diễn biến bệnh:** biểu đồ sinh hiệu 7 ngày (dữ liệu minh họa), form **Thêm diễn biến bệnh** (tối thiểu 10 ký tự) và lịch sử diễn biến mới nhất trước. Mỗi ghi chép có nhãn "Đã ký số" và không sửa được.
+- **Thông tin nhập viện:** mã bệnh án, thời điểm nhập viện, chẩn đoán, ICD-10, lý do, bác sĩ phụ trách; sau xuất viện có thêm khối thông tin xuất viện.
+- **Sinh hiệu** và **Y lệnh:** chưa có nội dung, chỉ hiện "Nội dung đang được tổng hợp".
+
+**Chuyển giường:** bấm **Chuyển giường**, chọn khoa và giường trống mới. Giường cũ tự chuyển **Bảo trì**, giường mới chuyển **Đang sử dụng**, và một dòng diễn biến "Chuyển giường A → B" được tự ghi. Nếu giường vừa bị người khác lấy (ví dụ ở tab trình duyệt khác), hệ thống báo "Giường không còn khả dụng".
+
+### 9.4 Xuất viện
+
+Chỉ bác sĩ. Bấm **Xuất viện**, nhập tình trạng ra viện, kết luận điều trị, lời dặn, **ngày tái khám** (bắt buộc), tick ô xác nhận rồi bấm **Xác nhận xuất viện**. Kết quả: bệnh án hiện "Bệnh án đã đóng - chỉ đọc", form thêm diễn biến biến mất, giường chuyển **Bảo trì**. Với điều dưỡng nút này bị vô hiệu hóa, kèm gợi ý "Chỉ bác sĩ điều trị mới được phép xác nhận xuất viện".
+
+### 9.5 Nhật ký kiểm toán
+
+Mỗi thao tác sau ghi một dòng vào `NhatKyHeThong`, xem bằng `admin` ở tab **Nhật ký kiểm toán** (mục 8): Chỉ định nhập viện, Xếp giường, Chuyển giường, Ghi diễn biến, Xuất viện, Đánh dấu giường sẵn sàng. Thao tác bị từ chối (403) hoặc xung đột (trùng bệnh án, giường đã bị lấy) ghi với kết quả *Thất bại*.
+
+### 9.6 Dữ liệu mẫu và đặt lại
+
+- Giường đang dùng: BA-26-0057 Trần Thị Bích (G-KNOI-201B, có ba ghi diễn biến mẫu), BA-26-0050, BA-26-0053, BA-26-0046. Ba ca đã xuất viện (BA-26-0038, 0041, 0044) dùng làm lịch sử cho RPT-02.
+- Muốn bắt đầu lại, xóa khóa `hpms-inpatient-v1` trong localStorage rồi tải lại trang.
+
+## 10. Demo REPORT – Báo cáo và thống kê
+
+Đăng nhập `admin`, vào tab **Báo cáo & Thống kê**. Bốn báo cáo nằm ở thanh chọn phía trên:
+
+| Mã | Báo cáo | Nguồn dữ liệu |
+|---|---|---|
+| RPT-01 | Tiếp nhận & Lượng bệnh nhân | Số liệu mẫu cố định |
+| RPT-02 | Giường bệnh & Công suất | **Lấy trực tiếp từ module Nội trú** (mục 9) |
+| RPT-03 | Mô hình bệnh tật ICD-10 | Số liệu mẫu cố định |
+| RPT-06 | An toàn dùng thuốc | Số liệu mẫu cố định, khớp các kịch bản ở mục 3 |
+| RPT-05 | Nhật ký kiểm toán | Tab **Nhật ký kiểm toán** riêng (mục 8) |
+
+- **Bộ lọc kỳ (RPT-01, 03, 06):** chọn từ tháng / đến tháng rồi bấm **Tạo báo cáo**. Ngày bắt đầu lớn hơn ngày kết thúc, hoặc vượt tháng hiện tại, hiện lỗi đỏ; kỳ kết thúc trước 01/2026 hiện trạng thái "Chưa có dữ liệu báo cáo". RPT-01 có thêm lựa chọn Theo tháng / Theo năm.
+- **RPT-02:** lọc theo khoa rồi bấm **Tạo báo cáo**. Tổng giường, Trống, Đang sử dụng, Bảo trì, Tỷ lệ lấp đầy, tỷ lệ theo khoa, thời gian nằm viện trung bình (ALOS, tính từ các ca đã xuất viện) và bảng **Lịch sử sử dụng giường** đều đổi theo thao tác ở mục 9. Thử: xếp giường, chuyển giường rồi xuất viện một bệnh nhân, sau đó mở lại RPT-02 để thấy số liệu và các dòng lịch sử mới (lý do kết thúc: Chuyển giường, Xuất viện).
+- **Xuất báo cáo:** nút **Xuất báo cáo (CSV)** tải tệp `RPT-xx_yyyymmdd.csv` (UTF-8 có BOM, mở được bằng Excel). Mỗi lần xuất ghi một dòng *Xuất báo cáo* vào nhật ký kiểm toán. RPT-01, 03, 06 đang ở trạng thái lỗi hoặc rỗng thì không xuất.
+
+Chưa có: báo cáo xu hướng sinh hiệu, và xuất PDF/Excel thật (chỉ có CSV).
+
+## 11. Lưu ý khi demo
 
 - Mọi dữ liệu và trạng thái là mô phỏng; không có dịch vụ ngoài thật nào được gọi.
 - Đồng hồ trong module REC là **đồng hồ mô phỏng**, tách khỏi giờ hệ thống.
-- Nếu giao diện hiển thị dữ liệu cũ (đơn nháp, phiên đăng nhập), xóa localStorage và sessionStorage của trang rồi tải lại.
+- Nếu giao diện hiển thị dữ liệu cũ (đơn nháp, phiên đăng nhập, bệnh án nội trú), xóa localStorage và sessionStorage của trang rồi tải lại.
+- Phần INCARE và REPORT được gộp từ bản `Prototype.Khiem` (app độc lập, một tệp `App.tsx`). Thư mục `Prototype.Khiem` được giữ nguyên để đối chiếu; bản đó thiếu `.figma/make/site.json` và có lỗi cú pháp nên không chạy được.
 - Kiểm tra kiểu bằng `npx tsc --noEmit` (hiện không còn lỗi).

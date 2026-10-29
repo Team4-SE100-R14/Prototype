@@ -11,6 +11,9 @@ import {
   saveEncounterDraft,
   type ClinicalOrder,
 } from "../../lib/clinicalWorkflow"
+import useInpatient from "../../hooks/useInpatient"
+import { activeRecordFor, canAdmit } from "../../lib/inpatient"
+import AdmissionModal from "../inpatient/AdmissionModal"
 import Button from "../ui/Button"
 import Icon from "../ui/Icon"
 import { TextArea, TextInput } from "../ui/TextInput"
@@ -52,6 +55,9 @@ export default function ClinicalExamPage({
   const [orders, setOrders] = useState<ClinicalOrder[]>(readClinicalOrders)
   const [orderOpen, setOrderOpen] = useState(false)
   const [addendumOpen, setAddendumOpen] = useState(false)
+  const [admissionOpen, setAdmissionOpen] = useState(false)
+  const inpatient = useInpatient()
+  const activeAdmission = activeRecordFor(inpatient, patient.id)
   const [notice, setNotice] = useState("")
   const [draftDirty, setDraftDirty] = useState(false)
   const lastSaveRequest = useRef(saveDraftRequest)
@@ -541,6 +547,21 @@ export default function ClinicalExamPage({
             <Button variant="ghost" onClick={onBackToQueue}>
               Hủy
             </Button>
+            {canAdmit(user.role) && (
+              <Button
+                variant="secondary"
+                onClick={() => setAdmissionOpen(true)}
+                title={
+                  activeAdmission
+                    ? `Đang có bệnh án nội trú ${activeAdmission.id}`
+                    : undefined
+                }
+              >
+                {activeAdmission
+                  ? `Nội trú: ${activeAdmission.id}`
+                  : "Chỉ định nhập viện"}
+              </Button>
+            )}
             <Button
               variant="ghost"
               className="border border-border-subtle"
@@ -594,6 +615,30 @@ export default function ClinicalExamPage({
             setOrderOpen(false)
             setNotice(
               `Đã tạo phiếu cha ${created.id} gồm ${created.services.length} dịch vụ và chuyển ngay sang hàng đợi KTV.`,
+            )
+          }}
+        />
+      )}
+
+      {admissionOpen && (
+        <AdmissionModal
+          patient={{
+            code: patient.id,
+            name: patient.name,
+            age: patient.age,
+            gender: patient.gender,
+            encounterId: patient.encounterId,
+          }}
+          user={user}
+          defaultIcd={
+            (finalDiagnosis || diagnosis).match(/^([A-Z]\d{2}(?:\.\d+)?)\s*-/)?.[1] ?? ""
+          }
+          defaultDiagnosis={(finalDiagnosis || diagnosis).replace(/^[A-Z]\d{2}(?:\.\d+)?\s*-\s*/, "")}
+          onClose={() => setAdmissionOpen(false)}
+          onSuccess={(record) => {
+            setAdmissionOpen(false)
+            setNotice(
+              `Đã tạo bệnh án nội trú ${record.id}. ${patient.name} đã vào hàng chờ xếp giường (${record.department}); mở mục Nội trú để xếp giường.`,
             )
           }}
         />

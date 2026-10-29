@@ -1,0 +1,251 @@
+import Button from "../ui/Button"
+import NamedIcon, { type IconName } from "../ui/NamedIcon"
+
+export type ReportState = "data" | "error" | "empty"
+
+export function ReportHeading({
+  title,
+  description,
+  code,
+  onExport,
+}: {
+  title: string
+  description: string
+  code: string
+  onExport: () => void
+}) {
+  return (
+    <div className="mb-6 flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
+      <div>
+        <div className="mb-2 inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-[11px] font-extrabold tracking-wide text-emerald-700">
+          {code}
+        </div>
+        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
+          {title}
+        </h1>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
+          {description}
+        </p>
+      </div>
+      <Button
+        variant="secondary"
+        className="inline-flex items-center gap-2"
+        onClick={onExport}
+      >
+        <NamedIcon name="download" className="size-4" />
+        Xuất báo cáo (CSV)
+      </Button>
+    </div>
+  )
+}
+
+export function ReportKpi({
+  label,
+  value,
+  tone = "default",
+  note,
+}: {
+  label: string
+  value: string
+  tone?: "default" | "green" | "blue" | "gray" | "red" | "amber"
+  note?: string
+}) {
+  const toneStyles = {
+    default: "bg-slate-100 text-slate-600",
+    green: "bg-emerald-100 text-emerald-700",
+    blue: "bg-blue-100 text-blue-700",
+    gray: "bg-slate-200 text-slate-600",
+    red: "bg-red-100 text-red-700",
+    amber: "bg-amber-100 text-amber-700",
+  }
+  return (
+    <article className="min-h-36 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="text-xs font-bold leading-5 text-slate-500">{label}</div>
+        <span className={`size-2.5 shrink-0 rounded-full ${toneStyles[tone]}`} />
+      </div>
+      <div className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900">
+        {value}
+      </div>
+      {note && <p className="mt-2 text-[11px] leading-5 text-slate-500">{note}</p>}
+    </article>
+  )
+}
+
+export function EmptyReport({
+  message,
+  icon = "document",
+}: {
+  message: string
+  icon?: IconName
+}) {
+  return (
+    <section className="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-20 text-center">
+      <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+        <NamedIcon name={icon} className="size-7" />
+      </div>
+      <div className="mt-4 text-base font-extrabold text-slate-800">
+        Chưa có dữ liệu báo cáo
+      </div>
+      <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">
+        {message}
+      </p>
+    </section>
+  )
+}
+
+export function ReportPanel({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string
+  subtitle?: string
+  children: React.ReactNode
+}) {
+  return (
+    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-slate-200 px-5 py-4">
+        <h2 className="font-extrabold text-slate-900">{title}</h2>
+        {subtitle && <p className="mt-1 text-xs text-slate-500">{subtitle}</p>}
+      </div>
+      <div className="overflow-x-auto">{children}</div>
+    </section>
+  )
+}
+
+export function ReportFilterBar({ children }: { children: React.ReactNode }) {
+  return (
+    <section className="mb-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      {children}
+    </section>
+  )
+}
+
+export const FILTER_CONTROL =
+  "h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-emerald-600"
+
+export function PatientPyramid() {
+  const rows = [
+    { age: "Trên 65", male: "w-[72%]", female: "w-[86%]", other: "w-[5%]" },
+    { age: "46 – 65", male: "w-[88%]", female: "w-full", other: "w-[7%]" },
+    { age: "26 – 45", male: "w-[68%]", female: "w-[77%]", other: "w-[6%]" },
+    { age: "0 – 25", male: "w-[47%]", female: "w-[51%]", other: "w-[4%]" },
+  ]
+  return (
+    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="font-extrabold text-slate-900">Cơ cấu tuổi và giới tính</h2>
+          <p className="mt-1 text-xs text-slate-500">Đơn vị: người bệnh duy nhất</p>
+        </div>
+        <div className="flex gap-3 text-[11px] font-semibold text-slate-600">
+          <span className="flex items-center gap-1.5"><i className="size-2 rounded-full bg-blue-500" />Nam</span>
+          <span className="flex items-center gap-1.5"><i className="size-2 rounded-full bg-rose-400" />Nữ</span>
+          <span className="flex items-center gap-1.5"><i className="size-2 rounded-full bg-amber-400" />Khác</span>
+        </div>
+      </div>
+      <div className="mt-6 space-y-4">
+        {rows.map((row) => (
+          <div className="grid grid-cols-[1fr_64px_1fr] items-center gap-2" key={row.age}>
+            <div className="flex h-7 items-center justify-end rounded-l bg-slate-50">
+              <div className={`h-4 rounded-l bg-blue-500 ${row.male}`} />
+            </div>
+            <div className="text-center text-[10px] font-bold text-slate-500">{row.age}</div>
+            <div className="flex h-7 items-center gap-1 rounded-r bg-slate-50">
+              <div className={`h-4 rounded-r bg-rose-400 ${row.female}`} />
+              <div className={`h-4 rounded-sm bg-amber-400 ${row.other}`} />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-5 flex justify-between border-t border-slate-100 pt-3 text-[10px] font-semibold text-slate-400">
+        <span>400</span><span>200</span><span>0</span><span>200</span><span>400</span>
+      </div>
+    </section>
+  )
+}
+
+export function OutcomeChart() {
+  return (
+    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h2 className="font-extrabold text-slate-900">Phân bổ kết luận điều trị</h2>
+      <p className="mt-1 text-xs text-slate-500">Theo kết quả xử trí sau khám</p>
+      <div className="mt-5 flex flex-col items-center gap-6 sm:flex-row sm:justify-center">
+        <div className="relative size-44">
+          <svg viewBox="0 0 120 120" className="-rotate-90" role="img" aria-label="Biểu đồ tròn phân bổ kết luận điều trị">
+            <circle cx="60" cy="60" r="44" fill="none" stroke="currentColor" strokeWidth="17" className="text-slate-100" />
+            <circle cx="60" cy="60" r="44" fill="none" stroke="currentColor" strokeWidth="17" strokeDasharray="190 277" className="text-emerald-500" />
+            <circle cx="60" cy="60" r="44" fill="none" stroke="currentColor" strokeWidth="17" strokeDasharray="69 277" strokeDashoffset="-190" className="text-blue-500" />
+            <circle cx="60" cy="60" r="44" fill="none" stroke="currentColor" strokeWidth="17" strokeDasharray="18 277" strokeDashoffset="-259" className="text-amber-500" />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <strong className="text-2xl text-slate-900">1.248</strong>
+            <span className="text-[10px] font-semibold text-slate-500">Tổng cộng</span>
+          </div>
+        </div>
+        <div className="space-y-3 text-xs">
+          {[
+            ["bg-emerald-500", "Khám xong, cho về kê đơn", "860 · 68,9%"],
+            ["bg-blue-500", "Chỉ định nhập viện", "312 · 25,0%"],
+            ["bg-amber-500", "Chuyển viện", "76 · 6,1%"],
+          ].map(([color, label, value]) => (
+            <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2" key={label}>
+              <span className={`size-2.5 rounded-full ${color}`} />
+              <span className="font-medium text-slate-600">{label}</span>
+              <strong className="text-slate-800">{value}</strong>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+export function BarList({
+  title,
+  subtitle,
+  badge,
+  rows,
+}: {
+  title: string
+  subtitle: string
+  badge?: string
+  rows: Array<{ label: string; value: string; percent: number; color: string }>
+}) {
+  return (
+    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="font-extrabold text-slate-900">{title}</h2>
+          <p className="mt-1 text-xs text-slate-500">{subtitle}</p>
+        </div>
+        {badge && (
+          <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700">
+            {badge}
+          </span>
+        )}
+      </div>
+      <div className="mt-7 space-y-5">
+        {rows.map((row) => (
+          <div key={row.label}>
+            <div className="mb-2 flex justify-between text-xs">
+              <span className="font-bold text-slate-700">{row.label}</span>
+              <strong className="text-slate-900">{row.value}</strong>
+            </div>
+            <div className="h-3 overflow-hidden rounded-full bg-slate-100">
+              <div
+                className={`h-full rounded-full ${row.color}`}
+                style={{ width: `${Math.min(100, Math.max(0, row.percent))}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+export const TH =
+  "px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-slate-500 first:pl-5 last:pr-5"
+export const TD = "px-4 py-3.5 first:pl-5 last:pr-5"

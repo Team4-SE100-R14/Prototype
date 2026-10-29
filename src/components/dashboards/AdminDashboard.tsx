@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { AuthUser } from '../../App'
 import TopNav from '../TopNav'
 import AuditLogPage from '../AuditLogPage'
+import ReportsPage from '../reports/ReportsPage'
 
 interface Props { user: AuthUser; onLogout: () => void }
 
@@ -37,7 +38,7 @@ const SHIFTS = [
 ]
 
 export default function AdminDashboard({ user, onLogout }: Props) {
-  const [tab, setTab] = useState<'clinics' | 'beds' | 'shifts' | 'formulary' | 'audit'>('clinics')
+  const [tab, setTab] = useState<'clinics' | 'beds' | 'shifts' | 'formulary' | 'reports' | 'audit'>('clinics')
 
   const getLoadColor = (current: number, capacity: number) => {
     const pct = current / capacity
@@ -54,6 +55,7 @@ export default function AdminDashboard({ user, onLogout }: Props) {
     { id: 'beds', label: 'Công suất giường bệnh' },
     { id: 'shifts', label: 'Ca trực bác sĩ' },
     { id: 'formulary', label: 'Danh mục thuốc' },
+    { id: 'reports', label: 'Báo cáo & Thống kê' },
     { id: 'audit', label: 'Nhật ký kiểm toán' },
   ] as const
 
@@ -63,7 +65,7 @@ export default function AdminDashboard({ user, onLogout }: Props) {
 
       <div className="flex-1 p-4 lg:p-6 max-w-7xl mx-auto w-full">
         {/* Stats */}
-        {tab !== 'audit' && <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+        {tab !== 'audit' && tab !== 'reports' && <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
           {[
             { label: 'Tổng lượt khám hôm nay', value: '312', sub: '+18 so với hôm qua', color: 'text-cyan-700', bg: 'bg-cyan-50 border-cyan-100' },
             { label: 'Công suất giường', value: `${Math.round(occupiedBeds/totalBeds*100)}%`, sub: `${occupiedBeds}/${totalBeds} giường`, color: 'text-amber-700', bg: 'bg-amber-50 border-amber-100' },
@@ -231,6 +233,7 @@ export default function AdminDashboard({ user, onLogout }: Props) {
           </div>
         )}
 
+        {tab === 'reports' && <ReportsPage user={user} />}
         {tab === 'audit' && <AuditLogPage />}
       </div>
     </div>
