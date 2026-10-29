@@ -5,6 +5,7 @@ import WardVitalWorkspace, {
 } from "../clinical/WardVitalWorkspace"
 import ClinicalExamPage from "../doctor/ClinicalExamPage"
 import PatientQueue from "../doctor/PatientQueue"
+import EmergencyArrivalBanner from "../intake/EmergencyArrivalBanner"
 import PrescriptionWorkspace from "../prescription/PrescriptionWorkspace"
 import TopNav from "../TopNav"
 import Button from "../ui/Button"
@@ -227,6 +228,8 @@ export default function PhysicianDashboard(props: Props) {
           </div>
         }
       />
+
+      <EmergencyArrivalBanner user={props.user} />
 
       <div className="flex min-h-[calc(100vh-3.5rem)]">
         <aside className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-60 shrink-0 self-start overflow-y-auto border-r border-border-subtle bg-surface p-4 lg:block">

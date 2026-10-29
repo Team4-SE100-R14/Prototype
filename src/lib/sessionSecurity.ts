@@ -50,7 +50,7 @@ export interface SecurityAuditEntry {
   actor: string
   workstation: string
   action: string
-  actionTone: "amber"
+  actionTone: "amber" | "cyan"
   object: string
   result: "Thất bại" | "Thành công"
 }

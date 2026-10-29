@@ -45,5 +45,6 @@ coverage/
 Thumbs.db
 Desktop.ini
 
-# Claude Code local settings
-.claude/settings.local.json
+# Claude Code (settings and skills)
+.claude/
+.agent/
