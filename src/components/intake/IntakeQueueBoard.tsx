@@ -10,6 +10,7 @@ import {
   type Acuity,
 } from "../../lib/intakeQueue"
 import Button from "../ui/Button"
+import Pagination from "../ui/Pagination"
 import Modal from "../ui/Modal"
 import { TextInput } from "../ui/TextInput"
 import IntakeTriagePanel, { type TriageValue } from "./IntakeTriagePanel"
@@ -141,7 +142,11 @@ export default function IntakeQueueBoard({ user }: { user: AuthUser }) {
   const [quickOpen, setQuickOpen] = useState(false)
   const [notice, setNotice] = useState("")
   const waiting = queue.filter((item) => item.status === "DangCho")
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(5)
   const visible = queue.filter((item) => filter === "all" || item.acuity === filter)
+  const totalPages = Math.max(1, Math.ceil(visible.length / pageSize))
+  const paginatedVisible = visible.slice((page - 1) * pageSize, page * pageSize)
   const count = (acuity: Acuity) =>
     waiting.filter((item) => item.acuity === acuity).length
   const tabs: Array<{ id: Filter; label: string }> = [
@@ -165,14 +170,14 @@ export default function IntakeQueueBoard({ user }: { user: AuthUser }) {
               Hàng đợi tiếp nhận (phiếu khám)
             </h2>
             <p className="mt-1 text-xs text-text-muted">
-              Cấp cứu (ưu tiên 1) luôn đứng trước; ngoại trú xếp FIFO theo số
+              Cấp cứu (ưu tiên 1) luôn đứng trước; ngoại trú khám theo số
               thứ tự.
             </p>
           </div>
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-2 rounded-full border border-normal/20 bg-normal-bg px-3 py-1.5 text-xs font-semibold text-normal">
               <span className="h-2 w-2 animate-pulse rounded-full bg-normal" />
-              SSE trực tiếp
+              Cập nhật trực tiếp
             </span>
             <Button onClick={() => setQuickOpen(true)}>+ Tiếp nhận nhanh</Button>
           </div>
@@ -184,7 +189,7 @@ export default function IntakeQueueBoard({ user }: { user: AuthUser }) {
               type="button"
               role="tab"
               aria-selected={filter === tab.id}
-              onClick={() => setFilter(tab.id)}
+              onClick={() => { setFilter(tab.id); setPage(1) }}
               className={`shrink-0 cursor-pointer rounded-lg border px-3 py-2 text-xs font-semibold transition-colors ${
                 filter === tab.id
                   ? "border-brand-primary bg-brand-surface text-brand-deep"
@@ -215,7 +220,7 @@ export default function IntakeQueueBoard({ user }: { user: AuthUser }) {
             </tr>
           </thead>
           <tbody>
-            {visible.map((item) => (
+            {paginatedVisible.map((item) => (
               <tr
                 key={item.id}
                 className={`border-b border-border-subtle last:border-0 ${
@@ -273,6 +278,16 @@ export default function IntakeQueueBoard({ user }: { user: AuthUser }) {
           </tbody>
         </table>
       </div>
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={visible.length}
+        pageSize={pageSize}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+        pageSizeOptions={[5, 10, 20]}
+        itemLabel="lượt chờ"
+      />
       {quickOpen && (
         <QuickIntakeModal
           user={user}

@@ -8,6 +8,7 @@ import {
 } from "react"
 import type { AuthUser } from "../../App"
 import Button from "../ui/Button"
+import Pagination from "../ui/Pagination"
 import Tooltip from "../ui/Tooltip"
 import {
   AlertTriangle,
@@ -1704,32 +1705,16 @@ export default function ReceptionistDashboard({ user, onLogout }: Props) {
           </div>
 
           {/* Pagination Footer */}
-          <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-border-subtle bg-canvas px-5 py-3 text-xs text-text-muted">
-            <p>
-              Hiển thị {visibleQueue.length} / {filteredQueue.length} lượt chờ
-            </p>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                className="border border-border-subtle !px-2.5 !py-1 text-xs"
-                disabled={page === 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-              >
-                Trước
-              </Button>
-              <span className="font-mono text-xs text-text-secondary">
-                {page} / {totalPages}
-              </span>
-              <Button
-                variant="ghost"
-                className="border border-border-subtle !px-2.5 !py-1 text-xs"
-                disabled={page === totalPages}
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              >
-                Sau
-              </Button>
-            </div>
-          </footer>
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalItems={filteredQueue.length}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            pageSizeOptions={[5, 10, 20, 50]}
+            itemLabel="lượt chờ"
+          />
         </section>
       </main>
 

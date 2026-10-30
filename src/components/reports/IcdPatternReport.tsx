@@ -1,9 +1,10 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import type { AuthUser } from "../../App"
 import { exportReportCsv } from "../../lib/reportExport"
 import Button from "../ui/Button"
 import FieldLabel from "../ui/FieldLabel"
 import NamedIcon from "../ui/NamedIcon"
+import Pagination from "../ui/Pagination"
 import {
   BarList,
   EmptyReport,
@@ -43,6 +44,13 @@ export default function IcdPatternReport({
   const [from, setFrom] = useState("2026-01")
   const [to, setTo] = useState("2026-10")
   const [state, setState] = useState<ReportState>("data")
+  const [icdPage, setIcdPage] = useState(1)
+  const [icdPageSize, setIcdPageSize] = useState(5)
+
+  const totalIcdPages = Math.max(1, Math.ceil(ICD_ROWS.length / icdPageSize))
+  const paginatedRows = useMemo(() => {
+    return ICD_ROWS.slice((icdPage - 1) * icdPageSize, icdPage * icdPageSize)
+  }, [icdPage, icdPageSize])
 
   const createReport = () => {
     const current = new Date().toISOString().slice(0, 7)
@@ -153,7 +161,7 @@ export default function IcdPatternReport({
                 </tr>
               </thead>
               <tbody>
-                {ICD_ROWS.map((row) => (
+                {paginatedRows.map((row) => (
                   <tr className="border-t border-slate-100 text-sm text-slate-600" key={row[0]}>
                     <td className={TD}><strong className="text-blue-700">{row[0]}</strong></td>
                     <td className={`${TD} font-semibold text-slate-800`}>{row[1]}</td>
@@ -164,6 +172,16 @@ export default function IcdPatternReport({
                 ))}
               </tbody>
             </table>
+            <Pagination
+              currentPage={icdPage}
+              totalPages={totalIcdPages}
+              totalItems={ICD_ROWS.length}
+              pageSize={icdPageSize}
+              onPageChange={setIcdPage}
+              onPageSizeChange={setIcdPageSize}
+              pageSizeOptions={[5, 10, 20]}
+              itemLabel="chẩn đoán"
+            />
           </ReportPanel>
         </div>
       ) : null}

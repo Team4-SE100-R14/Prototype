@@ -1,7 +1,8 @@
-import { useState, type ReactNode } from "react"
+import { useMemo, useState, type ReactNode } from "react"
 import type { AuthUser } from "../../App"
 import SessionSecurityMenu from "../SessionSecurityMenu"
 import Button from "../ui/Button"
+import Pagination from "../ui/Pagination"
 import Tooltip from "../ui/Tooltip"
 import {
   AlertCircle,
@@ -258,6 +259,20 @@ export default function PatientDashboard({ onLogout }: Props) {
   const [preview, setPreview] = useState<typeof ATTACHMENTS[number] | null>(
     null,
   )
+  const [resultsPage, setResultsPage] = useState(1)
+  const [resultsPageSize, setResultsPageSize] = useState(2)
+
+  const PARACLINICAL_RESULTS = useMemo(() => [
+    { code: "CLS-26-01", name: "X-Quang Ngực Thẳng", date: "28/09/2026", status: "Đã có kết quả", type: "Chẩn đoán hình ảnh" },
+    { code: "CLS-26-02", name: "Điện tâm đồ ECG thường quy", date: "28/09/2026", status: "Đã có kết quả", type: "Thăm dò chức năng" },
+    { code: "CLS-26-03", name: "Công thức máu toàn phần", date: "27/09/2026", status: "Đã có kết quả", type: "Xét nghiệm huyết học" },
+    { code: "CLS-26-04", name: "Sinh hóa máu cơ bản", date: "27/09/2026", status: "Đã có kết quả", type: "Xét nghiệm sinh hóa" },
+  ], [])
+
+  const totalResultsPages = Math.max(1, Math.ceil(PARACLINICAL_RESULTS.length / resultsPageSize))
+  const paginatedResults = useMemo(() => {
+    return PARACLINICAL_RESULTS.slice((resultsPage - 1) * resultsPageSize, resultsPage * resultsPageSize)
+  }, [PARACLINICAL_RESULTS, resultsPage, resultsPageSize])
   const [notice, setNotice] = useState("")
   const [piiVisible, setPiiVisible] = useState(() => {
     try {
@@ -693,30 +708,55 @@ export default function PatientDashboard({ onLogout }: Props) {
                 <FileImage aria-hidden="true" strokeWidth={1.75} className="h-6 w-6" />
               }
             >
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                {[
-                  "X-Quang Ngực Thẳng",
-                  "Điện tâm đồ ECG thường quy",
-                  "Công thức máu toàn phần",
-                  "Sinh hóa máu cơ bản",
-                ].map((result, index) => (
-                  <div
-                    key={result}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-border-subtle bg-canvas p-4"
-                  >
-                    <div>
-                      <p className="text-sm font-semibold text-text-primary">
-                        {result}
-                      </p>
-                      <p className="mt-1 text-xs text-text-muted">
-                        {index < 2 ? "28/09/2026" : "27/09/2026"}
-                      </p>
-                    </div>
-                    <span className="rounded-full bg-normal-bg px-2 py-1 text-xs font-semibold text-normal">
-                      Đã có kết quả
-                    </span>
-                  </div>
-                ))}
+              <div className="mt-6 overflow-hidden rounded-xl border border-border-subtle bg-surface shadow-clinical-xs">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="border-b border-border-strong bg-subsurface text-xs uppercase tracking-wide text-text-secondary">
+                      <tr>
+                        {["Mã CLS", "Tên xét nghiệm / CLS", "Phân loại", "Ngày thực hiện", "Trạng thái", "Thao tác"].map(h => (
+                          <th key={h} className="px-4 py-3 font-semibold">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border-subtle">
+                      {paginatedResults.map((result: { code: string; name: string; date: string; status: string; type: string }) => (
+                        <tr key={result.code} className="transition-colors hover:bg-canvas">
+                          <td className="px-4 py-3 font-mono text-xs font-semibold text-brand-deep">{result.code}</td>
+                          <td className="px-4 py-3 font-semibold text-text-primary">{result.name}</td>
+                          <td className="px-4 py-3 text-xs text-text-muted">{result.type}</td>
+                          <td className="px-4 py-3 font-mono text-xs text-text-secondary">{result.date}</td>
+                          <td className="px-4 py-3">
+                            <span className="inline-flex rounded-full bg-normal-bg px-2.5 py-0.5 text-xs font-semibold text-normal">
+                              {result.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <Button
+                              variant="ghost"
+                              className="border border-border-subtle !px-2.5 !py-1 text-xs text-brand-deep hover:bg-brand-surface"
+                              onClick={() => {
+                                const matched = ATTACHMENTS.find(a => a.title.toLowerCase().includes(result.name.slice(0, 4).toLowerCase())) || ATTACHMENTS[0]
+                                setPreview(matched)
+                              }}
+                            >
+                              Xem chi tiết
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <Pagination
+                  currentPage={resultsPage}
+                  totalPages={totalResultsPages}
+                  totalItems={PARACLINICAL_RESULTS.length}
+                  pageSize={resultsPageSize}
+                  onPageChange={setResultsPage}
+                  onPageSizeChange={setResultsPageSize}
+                  pageSizeOptions={[2, 4, 8]}
+                  itemLabel="kết quả"
+                />
               </div>
             </EmptyTab>
           )}

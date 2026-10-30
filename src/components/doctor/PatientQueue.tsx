@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import type { AuthUser } from "../../App"
 import TopNav from "../TopNav"
 import Button from "../ui/Button"
+import Pagination from "../ui/Pagination"
 import { UserPlus } from "lucide-react"
 import { CLINICAL_PATIENTS } from "../../lib/clinicalWorkflow"
 import IntakeQueueBoard from "../intake/IntakeQueueBoard"
@@ -24,6 +25,9 @@ export default function PatientQueue({
     "all" | "emergency" | "normal"
   >("all")
 
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(5)
+
   const patients = useMemo(
     () =>
       CLINICAL_PATIENTS.filter(
@@ -31,6 +35,16 @@ export default function PatientQueue({
       ),
     [priority],
   )
+
+  useEffect(() => {
+    setPage(1)
+  }, [priority, room])
+
+  const totalPages = Math.max(1, Math.ceil(patients.length / pageSize))
+  const paginatedPatients = useMemo(() => {
+    const start = (page - 1) * pageSize
+    return patients.slice(start, start + pageSize)
+  }, [patients, page, pageSize])
 
   return (
     <div className={`${embedded ? "min-h-full" : "min-h-screen"} bg-canvas`}>
@@ -137,7 +151,7 @@ export default function PatientQueue({
                 </tr>
               </thead>
               <tbody>
-                {patients.map((patient) => (
+                {paginatedPatients.map((patient) => (
                   <tr
                     key={patient.id}
                     className="border-t border-border-subtle bg-surface transition-colors hover:bg-canvas"
@@ -177,6 +191,16 @@ export default function PatientQueue({
               </tbody>
             </table>
           </div>
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalItems={patients.length}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            pageSizeOptions={[5, 10, 20]}
+            itemLabel="bệnh nhân"
+          />
         </section>
       </main>
     </div>

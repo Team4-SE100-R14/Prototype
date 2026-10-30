@@ -1,4 +1,5 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import Pagination from './ui/Pagination'
 import {
   ChevronLeft,
   ChevronRight,
@@ -179,6 +180,8 @@ export default function IdentityManagement() {
   const [scope, setScope] = useState('Tất cả')
   const [status, setStatus] = useState('Tất cả')
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(5)
 
   const accounts = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase('vi')
@@ -193,6 +196,16 @@ export default function IdentityManagement() {
       return matchesQuery && matchesScope && matchesStatus
     })
   }, [query, scope, status])
+
+  useEffect(() => {
+    setPage(1)
+  }, [query, scope, status])
+
+  const totalPages = Math.max(1, Math.ceil(accounts.length / pageSize))
+  const paginatedAccounts = useMemo(() => {
+    const start = (page - 1) * pageSize
+    return accounts.slice(start, start + pageSize)
+  }, [accounts, page, pageSize])
 
   return (
     <>
@@ -281,7 +294,7 @@ export default function IdentityManagement() {
                 </tr>
               </thead>
               <tbody>
-                {accounts.map((account) => (
+                {paginatedAccounts.map((account) => (
                   <tr className="border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50/70" key={account.id}>
                     <td className="px-4 py-3.5 font-mono text-xs font-semibold text-cyan-700">{account.id}</td>
                     <td className="px-4 py-3.5">
@@ -370,26 +383,16 @@ export default function IdentityManagement() {
               </tbody>
             </table>
           </div>
-          <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50/60 px-4 py-3">
-            <p className="text-xs text-slate-500">Hiển thị {accounts.length} trong tổng số 16 tài khoản</p>
-            <div className="flex items-center gap-2">
-              <button
-                aria-label="Trang trước"
-                className="rounded-md border border-slate-200 bg-white p-1.5 text-slate-400 hover:bg-slate-50"
-                type="button"
-              >
-                <ChevronLeft aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
-              </button>
-              <span className="text-xs font-medium text-slate-600">Trang 1 / 4</span>
-              <button
-                aria-label="Trang sau"
-                className="rounded-md border border-slate-200 bg-white p-1.5 text-slate-600 hover:bg-slate-50"
-                type="button"
-              >
-                <ChevronRight aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalItems={accounts.length}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            pageSizeOptions={[5, 10, 20]}
+            itemLabel="tài khoản"
+          />
         </div>
       </section>
 

@@ -11,6 +11,7 @@ import {
 } from "../../lib/clinicalWorkflow"
 import TopNav from "../TopNav"
 import Button from "../ui/Button"
+import Pagination from "../ui/Pagination"
 import { Check, FileText, FlaskConical, Upload } from "lucide-react"
 import { TextArea, TextInput } from "../ui/TextInput"
 
@@ -66,6 +67,9 @@ export default function ParaclinicalTechDashboard({
   )
   const [notice, setNotice] = useState("")
 
+  const [tablePage, setTablePage] = useState(1)
+  const [tablePageSize, setTablePageSize] = useState(5)
+
   const orders = useMemo(
     () => {
       const category = room.includes("Chẩn đoán")
@@ -79,6 +83,16 @@ export default function ParaclinicalTechDashboard({
     },
     [allOrders, room, status],
   )
+
+  useEffect(() => {
+    setTablePage(1)
+  }, [room, status])
+
+  const totalPages = Math.max(1, Math.ceil(orders.length / tablePageSize))
+  const paginatedOrders = useMemo(() => {
+    const start = (tablePage - 1) * tablePageSize
+    return orders.slice(start, start + tablePageSize)
+  }, [orders, tablePage, tablePageSize])
   const selectedOrder =
     allOrders.find((order) => order.id === selectedOrderId) || allOrders[0]
   const selectedService =
@@ -509,7 +523,7 @@ export default function ParaclinicalTechDashboard({
                 </tr>
               </thead>
               <tbody>
-                {orders.map((order) => (
+                {paginatedOrders.map((order) => (
                   <tr
                     key={order.id}
                     className="border-t border-border-subtle transition-colors hover:bg-canvas"
@@ -549,6 +563,16 @@ export default function ParaclinicalTechDashboard({
               </tbody>
             </table>
           </div>
+          <Pagination
+            currentPage={tablePage}
+            totalPages={totalPages}
+            totalItems={orders.length}
+            pageSize={tablePageSize}
+            onPageChange={setTablePage}
+            onPageSizeChange={setTablePageSize}
+            pageSizeOptions={[5, 10, 20]}
+            itemLabel="phiếu CLS"
+          />
         </section>
       </main>
     </div>

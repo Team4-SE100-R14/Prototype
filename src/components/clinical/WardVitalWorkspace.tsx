@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import type { AuthUser } from "../../App"
 import TopNav from "../TopNav"
 import Button from "../ui/Button"
+import Pagination from "../ui/Pagination"
 import Tooltip from "../ui/Tooltip"
 import {
   Activity,
@@ -819,6 +820,11 @@ function BedCard({ bed, flashing, isNurse, onOpen }: { bed: Bed; flashing: boole
 function AlertsView({ alerts, filter, onFilter, onOpen, onAcknowledge, onBack }: {
   alerts: AlertItem[]; filter: "all" | "unread" | "red" | "yellow"; onFilter: (value: "all" | "unread" | "red" | "yellow") => void; onOpen: (bed: string) => void; onAcknowledge: (id: string) => void; onBack: () => void
 }) {
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(5)
+  useEffect(() => { setPage(1) }, [filter])
+  const totalPages = Math.max(1, Math.ceil(alerts.length / pageSize))
+  const paginatedAlerts = alerts.slice((page - 1) * pageSize, page * pageSize)
   const filters = [{ id: "all", label: "Tất cả" }, { id: "unread", label: "Chưa xác nhận" }, { id: "red", label: "Đỏ" }, { id: "yellow", label: "Vàng" }] as const
   return <>
     <div className="mb-5">
@@ -835,7 +841,7 @@ function AlertsView({ alerts, filter, onFilter, onOpen, onAcknowledge, onBack }:
         <table className="w-full text-left text-sm">
           <thead className="bg-subsurface text-xs text-text-muted"><tr>{["Mã cảnh báo", "Giường", "Bệnh nhân", "Mức độ", "Thông số vi phạm", "Giá trị", "Thời gian", "Trạng thái", "Thao tác"].map(value => <th key={value} className="whitespace-nowrap px-4 py-3 font-semibold">{value}</th>)}</tr></thead>
           <tbody className="divide-y divide-border-subtle">
-            {alerts.map(item => <tr key={item.id} onClick={() => onOpen(item.bed)} className="cursor-pointer hover:bg-canvas">
+            {paginatedAlerts.map(item => <tr key={item.id} onClick={() => onOpen(item.bed)} className="cursor-pointer hover:bg-canvas">
               <td className="px-4 py-4 font-mono text-xs font-semibold text-brand-deep">{item.id}</td>
               <td className="px-4 py-4 font-mono font-bold">{item.bed}</td>
               <td className="whitespace-nowrap px-4 py-4"><p className="font-semibold">{item.patient}</p><p className="text-xs text-text-muted">{item.patientId}</p></td>
@@ -847,6 +853,16 @@ function AlertsView({ alerts, filter, onFilter, onOpen, onAcknowledge, onBack }:
           </tbody>
         </table>
       </div>
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={alerts.length}
+        pageSize={pageSize}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+        pageSizeOptions={[5, 10, 20]}
+        itemLabel="cảnh báo"
+      />
     </Card>
   </>
 }
@@ -923,6 +939,10 @@ function EvaluationCard({ evaluation }: { evaluation: Evaluation }) {
 }
 
 function HistoryCard({ records, metric, setMetric }: { records: VitalRecord[]; metric: MetricKey; setMetric: (metric: MetricKey) => void }) {
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(5)
+  const totalPages = Math.max(1, Math.ceil(records.length / pageSize))
+  const paginatedRecords = records.slice((page - 1) * pageSize, page * pageSize)
   const chronological = [...records].reverse()
   const values = chronological.map(item => item[metric]).filter((value): value is number => value !== null)
   const min = Math.min(...values, 0)
@@ -951,11 +971,21 @@ function HistoryCard({ records, metric, setMetric }: { records: VitalRecord[]; m
         })}
       </svg>
     </div>
-    <div className="max-h-[34rem] overflow-auto"><table className="w-full min-w-[62rem] text-left text-xs"><thead className="sticky top-0 bg-subsurface text-text-muted"><tr>{["Mã phiếu", "Thời gian đo", "Nhịp thở", "SpO2", "Mạch", "HA (tâm thu/tâm trương)", "Nhiệt độ", "Trạng thái", "Người ghi"].map(value => <th key={value} className="whitespace-nowrap px-3 py-3 font-semibold">{value}</th>)}</tr></thead><tbody className="divide-y divide-border-subtle">{records.map(record => {
+    <div className="max-h-[34rem] overflow-auto"><table className="w-full min-w-[62rem] text-left text-xs"><thead className="sticky top-0 bg-subsurface text-text-muted"><tr>{["Mã phiếu", "Thời gian đo", "Nhịp thở", "SpO2", "Mạch", "HA (tâm thu/tâm trương)", "Nhiệt độ", "Trạng thái", "Người ghi"].map(value => <th key={value} className="whitespace-nowrap px-3 py-3 font-semibold">{value}</th>)}</tr></thead><tbody className="divide-y divide-border-subtle">{paginatedRecords.map(record => {
       const evaluated = assessment(record)
       const status = evaluated.result === "red" ? ["red", "Cảnh báo đỏ"] : evaluated.result === "yellow" ? ["yellow", "Cảnh báo vàng"] : evaluated.missing ? ["missing", "Thiếu sinh hiệu"] : ["normal", "Ổn định"]
       return <tr key={record.id} className="hover:bg-canvas"><td className="px-3 py-3 font-mono font-semibold text-brand-deep">{record.id}</td><td className="whitespace-nowrap px-3 py-3">{record.time}</td>{(["rr", "spo2", "pulse"] as MetricKey[]).map(key => <td key={key} className="px-3 py-3"><Chip level={evaluated.levels[key]}>{formatValue(key, record[key], true)}</Chip></td>)}<td className="px-3 py-3"><Chip level={evaluated.levels.sys === "red" || evaluated.levels.dia === "red" ? "red" : evaluated.levels.sys === "yellow" || evaluated.levels.dia === "yellow" ? "yellow" : record.sys === null || record.dia === null ? "missing" : "normal"}>{record.sys === null || record.dia === null ? "Thiếu" : `${record.sys}/${record.dia}`}</Chip></td><td className="px-3 py-3"><Chip level={evaluated.levels.temp}>{formatValue("temp", record.temp, true)}</Chip></td><td className="px-3 py-3"><Chip level={status[0] as Level}>{status[1]}</Chip></td><td className="whitespace-nowrap px-3 py-3 text-text-secondary">{record.recorder}</td></tr>
     })}</tbody></table></div>
+    <Pagination
+      currentPage={page}
+      totalPages={totalPages}
+      totalItems={records.length}
+      pageSize={pageSize}
+      onPageChange={setPage}
+      onPageSizeChange={setPageSize}
+      pageSizeOptions={[5, 10, 20]}
+      itemLabel="phiếu sinh hiệu"
+    />
   </Card>
 }
 

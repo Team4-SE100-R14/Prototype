@@ -1,4 +1,5 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import Pagination from './ui/Pagination'
 import {
   Calendar,
   Check,
@@ -236,6 +237,15 @@ function AuditDrawer({ entry, onClose }: { entry: AuditEntry; onClose: () => voi
 
 function AuditTable() {
   const [securityEntries, setSecurityEntries] = useState(readSecurityAudit)
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(6)
+
+  const allEvents = useMemo(() => [...securityEntries, ...AUDIT_ENTRIES], [securityEntries])
+  const totalPages = Math.max(1, Math.ceil(allEvents.length / pageSize))
+  const paginatedEvents = useMemo(() => {
+    const start = (page - 1) * pageSize
+    return allEvents.slice(start, start + pageSize)
+  }, [allEvents, page, pageSize])
   useEffect(() => {
     const refresh = () => setSecurityEntries(readSecurityAudit())
     const storage = (event: StorageEvent) => { if (event.key === AUDIT_KEY) refresh() }
@@ -358,7 +368,7 @@ function AuditTable() {
               </tr>
             </thead>
             <tbody>
-              {[...securityEntries, ...AUDIT_ENTRIES].map((entry) => (
+              {paginatedEvents.map((entry) => (
                 <tr className="border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50/70" key={entry.id}>
                   <td className="px-4 py-3.5 font-mono text-xs font-semibold text-cyan-700">{entry.id}</td>
                   <td className="whitespace-nowrap px-4 py-3.5 font-mono text-xs text-slate-600">{entry.time}</td>
@@ -407,18 +417,16 @@ function AuditTable() {
           <ShieldAlert aria-hidden="true" strokeWidth={1.75} className="h-4 w-4 flex-shrink-0" />
           <strong>Quy tắc an ninh:</strong> Nhật ký kiểm toán có tính bất biến Append-Only, không thể sửa xóa.
         </div>
-        <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50/60 px-4 py-3">
-          <p className="text-xs text-slate-500">Hiển thị 6 sự kiện mới nhất</p>
-          <div className="flex items-center gap-2">
-            <button aria-label="Trang trước" className="rounded-md border border-slate-200 bg-white p-1.5 text-slate-400" type="button">
-              <ChevronLeft aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
-            </button>
-            <span className="text-xs font-medium text-slate-600">Trang 1 / 75</span>
-            <button aria-label="Trang sau" className="rounded-md border border-slate-200 bg-white p-1.5 text-slate-600 hover:bg-slate-50" type="button">
-              <ChevronRight aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          totalItems={allEvents.length}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          pageSizeOptions={[6, 12, 24, 48]}
+          itemLabel="sự kiện"
+        />
       </div>
 
       {selectedEntry && <AuditDrawer entry={selectedEntry} onClose={() => setSelectedEntry(null)} />}
@@ -429,6 +437,13 @@ function AuditTable() {
 function ForensicExport() {
   const [exportType, setExportType] = useState('json')
   const [scanComplete, setScanComplete] = useState(true)
+  const [exportPage, setExportPage] = useState(1)
+  const [exportPageSize, setExportPageSize] = useState(5)
+  const totalExportPages = Math.max(1, Math.ceil(EXPORTS.length / exportPageSize))
+  const paginatedExports = useMemo(() => {
+    const start = (exportPage - 1) * exportPageSize
+    return EXPORTS.slice(start, start + exportPageSize)
+  }, [exportPage, exportPageSize])
 
   return (
     <div>
@@ -524,7 +539,7 @@ function ForensicExport() {
                 </tr>
               </thead>
               <tbody>
-                {EXPORTS.map((item) => (
+                {paginatedExports.map((item) => (
                   <tr className="border-b border-slate-100 last:border-0 hover:bg-slate-50/70" key={item.id}>
                     <td className="px-4 py-3 font-mono text-xs font-semibold text-cyan-700">{item.id}</td>
                     <td className="px-4 py-3 font-mono text-xs text-slate-600">{item.time}</td>
@@ -543,6 +558,16 @@ function ForensicExport() {
               </tbody>
             </table>
           </div>
+          <Pagination
+            currentPage={exportPage}
+            totalPages={totalExportPages}
+            totalItems={EXPORTS.length}
+            pageSize={exportPageSize}
+            onPageChange={setExportPage}
+            onPageSizeChange={setExportPageSize}
+            pageSizeOptions={[5, 10, 20]}
+            itemLabel="gói xuất"
+          />
         </section>
       </div>
     </div>

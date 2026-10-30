@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { AuthUser } from '../../App'
 import TopNav from '../TopNav'
 import AuditLogPage from '../AuditLogPage'
 import ReportsPage from '../reports/ReportsPage'
 import NamedIcon from '../ui/NamedIcon'
+import Pagination from '../ui/Pagination'
 import Tooltip from '../ui/Tooltip'
 
 interface Props { user: AuthUser; onLogout: () => void }
@@ -41,6 +42,45 @@ const SHIFTS = [
 
 export default function AdminDashboard({ user, onLogout }: Props) {
   const [tab, setTab] = useState<'clinics' | 'beds' | 'shifts' | 'formulary' | 'reports' | 'audit'>('clinics')
+  const [clinicPage, setClinicPage] = useState(1)
+  const [clinicPageSize, setClinicPageSize] = useState(4)
+
+  const [bedPage, setBedPage] = useState(1)
+  const [bedPageSize, setBedPageSize] = useState(4)
+
+  const [shiftPage, setShiftPage] = useState(1)
+  const [shiftPageSize, setShiftPageSize] = useState(4)
+
+  const [drugPage, setDrugPage] = useState(1)
+  const [drugPageSize, setDrugPageSize] = useState(4)
+  const [drugSearch, setDrugSearch] = useState("")
+
+  const FORMULARY_LIST = useMemo(() => [
+    { name: 'Amoxicillin 500mg', group: 'Kháng sinh', unit: 'Viên', stock: 2400, ok: true },
+    { name: 'Metformin 500mg', group: 'Tiểu đường', unit: 'Viên', stock: 800, ok: true },
+    { name: 'Amlodipine 5mg', group: 'Tim mạch', unit: 'Viên', stock: 120, ok: false },
+    { name: 'Pantoprazole 40mg', group: 'Tiêu hóa', unit: 'Ống/Lọ', stock: 450, ok: true },
+    { name: 'Ceftriaxone 1g', group: 'Kháng sinh', unit: 'Lọ tiêm', stock: 60, ok: false },
+    { name: 'Salbutamol 2.5mg', group: 'Hô hấp', unit: 'Ống khí dung', stock: 200, ok: true },
+  ], [])
+
+  const filteredDrugs = useMemo(() => {
+    const q = drugSearch.trim().toLowerCase()
+    if (!q) return FORMULARY_LIST
+    return FORMULARY_LIST.filter(d => d.name.toLowerCase().includes(q) || d.group.toLowerCase().includes(q))
+  }, [FORMULARY_LIST, drugSearch])
+
+  const totalClinicPages = Math.max(1, Math.ceil(CLINICS.length / clinicPageSize))
+  const paginatedClinics = useMemo(() => CLINICS.slice((clinicPage - 1) * clinicPageSize, clinicPage * clinicPageSize), [clinicPage, clinicPageSize])
+
+  const totalBedPages = Math.max(1, Math.ceil(BEDS.length / bedPageSize))
+  const paginatedBeds = useMemo(() => BEDS.slice((bedPage - 1) * bedPageSize, bedPage * bedPageSize), [bedPage, bedPageSize])
+
+  const totalShiftPages = Math.max(1, Math.ceil(SHIFTS.length / shiftPageSize))
+  const paginatedShifts = useMemo(() => SHIFTS.slice((shiftPage - 1) * shiftPageSize, shiftPage * shiftPageSize), [shiftPage, shiftPageSize])
+
+  const totalDrugPages = Math.max(1, Math.ceil(filteredDrugs.length / drugPageSize))
+  const paginatedDrugs = useMemo(() => filteredDrugs.slice((drugPage - 1) * drugPageSize, drugPage * drugPageSize), [filteredDrugs, drugPage, drugPageSize])
 
   const getLoadColor = (current: number, capacity: number) => {
     const pct = current / capacity
@@ -104,45 +144,67 @@ export default function AdminDashboard({ user, onLogout }: Props) {
           ))}
         </div>
 
-        {/* Clinics */}
+        {/* Clinics Table */}
         {tab === 'clinics' && (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {CLINICS.map(c => {
-              const pct = Math.round(c.current / c.capacity * 100)
-              return (
-                <div
-                  key={c.name}
-                  className={`rounded-xl border bg-surface p-4 shadow-clinical-xs interactive-peek transition-all ${
-                    c.status === 'critical'
-                      ? 'border-sptt-red-border/60'
-                      : c.status === 'warning'
-                        ? 'border-sptt-yellow-border/60'
-                        : 'border-border-subtle'
-                  }`}
-                >
-                  <div className="mb-3 flex items-start justify-between gap-2">
-                    <div className="font-heading text-sm font-semibold text-text-primary">{c.name}</div>
-                    {c.status === 'critical' && (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-sptt-red-border/50 bg-sptt-red-bg px-2 py-0.5 font-heading text-xs font-semibold text-sptt-red">
-                        <NamedIcon name="alert" className="size-3.5" />
-                        Quá tải
-                      </span>
-                    )}
-                  </div>
-                  <div className="mb-2 flex items-end gap-1">
-                    <span className="font-mono text-2xl font-bold tabular-nums text-text-primary">{c.current}</span>
-                    <span className="mb-0.5 font-mono text-sm tabular-nums text-text-muted">/ {c.capacity}</span>
-                  </div>
-                  <div className="mb-2 h-1.5 w-full rounded-full bg-subsurface">
-                    <div className={`h-1.5 rounded-full transition-all ${getLoadColor(c.current, c.capacity)}`} style={{ width: `${pct}%` }} />
-                  </div>
-                  <div className="flex justify-between text-xs text-text-muted">
-                    <span className="tabular-nums">{pct}% công suất</span>
-                    <span className="tabular-nums">{c.doctors} bác sĩ</span>
-                  </div>
-                </div>
-              )
-            })}
+          <div className="overflow-hidden rounded-xl border border-border-subtle bg-surface shadow-clinical-xs">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="border-b border-border-strong bg-subsurface">
+                  <tr>
+                    {['Phòng khám / Chuyên khoa', 'Hiện tại / Công suất', 'Tỷ lệ tải', 'Bác sĩ trực', 'Trạng thái'].map(h => (
+                      <th key={h} className="px-4 py-2.5 text-left font-heading text-xs font-semibold text-text-secondary">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedClinics.map(c => {
+                    const pct = Math.round(c.current / c.capacity * 100)
+                    return (
+                      <tr key={c.name} className="border-b border-border-subtle transition-colors hover:bg-canvas">
+                        <td className="px-4 py-3 font-medium text-text-primary">{c.name}</td>
+                        <td className="px-4 py-3 font-mono tabular-nums text-text-secondary">
+                          <strong className="text-text-primary">{c.current}</strong> / {c.capacity}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <div className="h-1.5 w-24 rounded-full bg-subsurface">
+                              <div className={`h-1.5 rounded-full ${getLoadColor(c.current, c.capacity)}`} style={{ width: `${pct}%` }} />
+                            </div>
+                            <span className="font-mono text-xs tabular-nums text-text-muted">{pct}%</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 font-mono text-xs tabular-nums text-text-secondary">{c.doctors} bác sĩ</td>
+                        <td className="px-4 py-3">
+                          {c.status === 'critical' ? (
+                            <span className="inline-flex items-center gap-1 rounded-full border border-sptt-red-border/50 bg-sptt-red-bg px-2.5 py-0.5 font-heading text-xs font-semibold text-sptt-red">
+                              Quá tải
+                            </span>
+                          ) : c.status === 'warning' ? (
+                            <span className="inline-flex items-center gap-1 rounded-full border border-sptt-yellow-border/50 bg-sptt-yellow-bg px-2.5 py-0.5 font-heading text-xs font-semibold text-sptt-yellow">
+                              Cảnh báo
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 rounded-full border border-sptt-stable-border/50 bg-sptt-stable-bg px-2.5 py-0.5 font-heading text-xs font-semibold text-sptt-stable">
+                              Bình thường
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <Pagination
+              currentPage={clinicPage}
+              totalPages={totalClinicPages}
+              totalItems={CLINICS.length}
+              pageSize={clinicPageSize}
+              onPageChange={setClinicPage}
+              onPageSizeChange={setClinicPageSize}
+              pageSizeOptions={[2, 4, 8]}
+              itemLabel="phòng khám"
+            />
           </div>
         )}
 
@@ -159,7 +221,7 @@ export default function AdminDashboard({ user, onLogout }: Props) {
                   </tr>
                 </thead>
                 <tbody>
-                  {BEDS.map(b => {
+                  {paginatedBeds.map(b => {
                     const pct = Math.round(b.occupied / b.total * 100)
                     return (
                       <tr key={b.ward} className="border-b border-border-subtle transition-colors hover:bg-canvas">
@@ -183,6 +245,16 @@ export default function AdminDashboard({ user, onLogout }: Props) {
                 </tbody>
               </table>
             </div>
+            <Pagination
+              currentPage={bedPage}
+              totalPages={totalBedPages}
+              totalItems={BEDS.length}
+              pageSize={bedPageSize}
+              onPageChange={setBedPage}
+              onPageSizeChange={setBedPageSize}
+              pageSizeOptions={[2, 4, 8]}
+              itemLabel="khoa"
+            />
           </div>
         )}
 
@@ -205,7 +277,7 @@ export default function AdminDashboard({ user, onLogout }: Props) {
                   </tr>
                 </thead>
                 <tbody>
-                  {SHIFTS.map(s => (
+                  {paginatedShifts.map(s => (
                     <tr key={s.name} className="border-b border-border-subtle transition-colors hover:bg-canvas">
                       <td className="px-4 py-3 font-medium text-text-primary">{s.name}</td>
                       <td className="px-4 py-3 text-text-secondary">{s.dept}</td>
@@ -225,6 +297,16 @@ export default function AdminDashboard({ user, onLogout }: Props) {
                 </tbody>
               </table>
             </div>
+            <Pagination
+              currentPage={shiftPage}
+              totalPages={totalShiftPages}
+              totalItems={SHIFTS.length}
+              pageSize={shiftPageSize}
+              onPageChange={setShiftPage}
+              onPageSizeChange={setShiftPageSize}
+              pageSizeOptions={[2, 4, 8]}
+              itemLabel="ca trực"
+            />
           </div>
         )}
 
@@ -236,7 +318,7 @@ export default function AdminDashboard({ user, onLogout }: Props) {
               <div className="flex gap-2">
                 <input
                   className="rounded-lg border border-border-strong bg-surface px-3 py-1.5 text-xs text-text-primary placeholder:text-text-disabled focus:border-brand-primary focus:outline-none focus:ring-3 focus:ring-brand-primary/20"
-                  placeholder="Tìm thuốc..."
+                  placeholder="Tìm thuốc..." value={drugSearch} onChange={e => { setDrugSearch(e.target.value); setDrugPage(1); }}
                 />
                 <button type="button" className="cursor-pointer rounded-lg bg-brand-deep px-3 py-1.5 font-heading text-xs font-semibold text-surface transition-colors hover:bg-brand-dark">
                   + Thêm thuốc
@@ -253,14 +335,7 @@ export default function AdminDashboard({ user, onLogout }: Props) {
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    { name: 'Amoxicillin 500mg', group: 'Kháng sinh', unit: 'Viên', stock: 2400, ok: true },
-                    { name: 'Metformin 500mg', group: 'Tiểu đường', unit: 'Viên', stock: 800, ok: true },
-                    { name: 'Amlodipine 5mg', group: 'Tim mạch', unit: 'Viên', stock: 120, ok: false },
-                    { name: 'Pantoprazole 40mg', group: 'Tiêu hóa', unit: 'Ống/Lọ', stock: 450, ok: true },
-                    { name: 'Ceftriaxone 1g', group: 'Kháng sinh', unit: 'Lọ tiêm', stock: 60, ok: false },
-                    { name: 'Salbutamol 2.5mg', group: 'Hô hấp', unit: 'Ống khí dung', stock: 200, ok: true },
-                  ].map(d => (
+                  {paginatedDrugs.map(d => (
                     <tr key={d.name} className="border-b border-border-subtle transition-colors hover:bg-canvas">
                       <td className="px-3 py-2.5 font-medium text-text-primary">{d.name}</td>
                       <td className="px-3 py-2.5 text-xs text-text-secondary">{d.group}</td>
@@ -290,6 +365,16 @@ export default function AdminDashboard({ user, onLogout }: Props) {
                 </tbody>
               </table>
             </div>
+            <Pagination
+              currentPage={drugPage}
+              totalPages={totalDrugPages}
+              totalItems={filteredDrugs.length}
+              pageSize={drugPageSize}
+              onPageChange={setDrugPage}
+              onPageSizeChange={setDrugPageSize}
+              pageSizeOptions={[2, 4, 8]}
+              itemLabel="thuốc"
+            />
           </div>
         )}
 
