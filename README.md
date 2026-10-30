@@ -296,5 +296,4 @@ Chưa có: báo cáo xu hướng sinh hiệu, và xuất PDF/Excel thật (chỉ
 - Mọi dữ liệu và trạng thái là mô phỏng; không có dịch vụ ngoài thật nào được gọi.
 - Đồng hồ trong module REC là **đồng hồ mô phỏng**, tách khỏi giờ hệ thống.
 - Nếu giao diện hiển thị dữ liệu cũ (đơn nháp, phiên đăng nhập, bệnh án nội trú), xóa localStorage và sessionStorage của trang rồi tải lại.
-- Phần INCARE và REPORT được gộp từ bản `Prototype.Khiem` (app độc lập, một tệp `App.tsx`). Thư mục `Prototype.Khiem` được giữ nguyên để đối chiếu; bản đó thiếu `.figma/make/site.json` và có lỗi cú pháp nên không chạy được.
 - Kiểm tra kiểu bằng `npx tsc --noEmit` (hiện không còn lỗi).
