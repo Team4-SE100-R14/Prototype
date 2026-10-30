@@ -2,7 +2,20 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import type { AuthUser } from "../../App"
 import TopNav from "../TopNav"
 import Button from "../ui/Button"
-import Icon from "../ui/Icon"
+import Tooltip from "../ui/Tooltip"
+import {
+  Activity,
+  AlertTriangle,
+  Bed as BedIcon,
+  Bell,
+  ChevronRight,
+  Clock,
+  List,
+  User,
+  Volume2,
+  X,
+  type LucideIcon,
+} from "lucide-react"
 import { TextArea, TextInput } from "../ui/TextInput"
 
 interface Props {
@@ -175,10 +188,10 @@ function assessment(values: VitalValues) {
 }
 
 const levelClasses: Record<Level, string> = {
-  normal: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  yellow: "border-amber-200 bg-amber-50 text-amber-700",
-  red: "border-red-200 bg-red-50 text-red-700",
-  missing: "border-slate-200 bg-slate-100 text-slate-500",
+  normal: "border-sptt-stable-border bg-sptt-stable-bg text-sptt-stable",
+  yellow: "border-sptt-yellow-border bg-sptt-yellow-bg text-sptt-yellow",
+  red: "border-sptt-red-border bg-sptt-red-bg text-sptt-red",
+  missing: "border-dashed border-sptt-incomplete-border bg-sptt-incomplete-bg text-sptt-incomplete",
 }
 
 const levelLabel: Record<Level, string> = { normal: "Bình thường", yellow: "Vàng", red: "Đỏ", missing: "Thiếu" }
@@ -203,20 +216,25 @@ function nowInput(minutes: number) {
   return local.toISOString().slice(0, 16)
 }
 
-function SmallIcon({ name, className = "h-5 w-5" }: { name: "bed" | "bell" | "alert" | "list" | "chevron" | "close" | "volume" | "clock" | "user" | "activity"; className?: string }) {
-  const paths: Record<string, ReactNode> = {
-    bed: <><path d="M3 18v-8m18 8v-5a3 3 0 0 0-3-3H9v8m-6-5h18M6 10V7h3a3 3 0 0 1 3 3" /></>,
-    bell: <><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></>,
-    alert: <><path d="M12 9v4m0 4h.01M10.3 3.8 2.4 18a2 2 0 0 0 1.8 3h15.6a2 2 0 0 0 1.8-3L13.7 3.8a2 2 0 0 0-3.4 0Z" /></>,
-    list: <><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" /></>,
-    chevron: <path d="m9 18 6-6-6-6" />,
-    close: <path d="M18 6 6 18M6 6l12 12" />,
-    volume: <><path d="M11 5 6 9H2v6h4l5 4V5Zm4 4a4 4 0 0 1 0 6m3-9a8 8 0 0 1 0 12" /></>,
-    clock: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
-    user: <><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></>,
-    activity: <path d="M3 12h4l2-7 4 14 2-7h6" />,
-  }
-  return <Icon className={className}>{paths[name]}</Icon>
+const SMALL_ICONS: Record<
+  "bed" | "bell" | "alert" | "list" | "chevron" | "close" | "volume" | "clock" | "user" | "activity",
+  LucideIcon
+> = {
+  bed: BedIcon,
+  bell: Bell,
+  alert: AlertTriangle,
+  list: List,
+  chevron: ChevronRight,
+  close: X,
+  volume: Volume2,
+  clock: Clock,
+  user: User,
+  activity: Activity,
+}
+
+function SmallIcon({ name, className = "h-5 w-5" }: { name: keyof typeof SMALL_ICONS; className?: string }) {
+  const Component = SMALL_ICONS[name]
+  return <Component aria-hidden="true" strokeWidth={1.75} className={className} />
 }
 
 function Chip({ level, children }: { level: Level; children: ReactNode }) {
@@ -224,7 +242,7 @@ function Chip({ level, children }: { level: Level; children: ReactNode }) {
 }
 
 function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <section className={`rounded-xl border border-border-subtle bg-surface shadow-sm ${className}`}>{children}</section>
+  return <section className={`rounded-xl border border-border-subtle bg-surface shadow-clinical-xs ${className}`}>{children}</section>
 }
 
 export default function WardVitalWorkspace({
@@ -621,7 +639,7 @@ export default function WardVitalWorkspace({
 
       <div className="fixed right-5 top-20 z-50 flex w-96 max-w-[calc(100vw-2.5rem)] flex-col gap-2">
         {banners.map(banner => (
-          <div key={banner.id} role="button" tabIndex={0} onClick={() => openRecord(banner.bed)} onKeyDown={event => event.key === "Enter" && openRecord(banner.bed)} className={`cursor-pointer rounded-xl border-l-4 bg-surface p-4 shadow-xl ${banner.level === "red" ? "border-red-600" : "border-amber-500"}`}>
+          <div key={banner.id} role="button" tabIndex={0} onClick={() => openRecord(banner.bed)} onKeyDown={event => event.key === "Enter" && openRecord(banner.bed)} className={`cursor-pointer rounded-2xl border border-l-4 bg-surface p-4 shadow-clinical-lg ${banner.level === "red" ? "border-sptt-red-border border-l-sptt-red-border" : "border-sptt-yellow-border border-l-sptt-yellow-border"}`}>
             <div className="flex items-start gap-3">
               <span className={`mt-0.5 ${banner.level === "red" ? "text-red-600" : "text-amber-600"}`}><SmallIcon name="alert" /></span>
               <div className="min-w-0 flex-1">
@@ -637,7 +655,7 @@ export default function WardVitalWorkspace({
 
       <div className="fixed right-5 bottom-5 z-50 flex w-96 max-w-[calc(100vw-2.5rem)] flex-col gap-2">
         {toasts.map((toast, index) => (
-          <div key={`${toast}-${index}`} className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 shadow-lg">{toast}</div>
+          <div key={`${toast}-${index}`} className="rounded-lg border border-sptt-stable-border bg-sptt-stable-bg px-4 py-3 text-sm font-medium text-sptt-stable shadow-clinical-lg">{toast}</div>
         ))}
       </div>
 
@@ -668,9 +686,9 @@ function DashboardView({ beds, unread, flashingBed, isNurse, onOpen, onAlerts }:
   const summaries = [
     { label: "Tổng giường", value: "12", tone: "text-brand-deep bg-brand-surface" },
     { label: "Có bệnh nhân", value: String(occupied), tone: "text-text-primary bg-subsurface" },
-    { label: "Cảnh báo đỏ", value: String(beds.filter(item => item.status === "red").length), tone: "text-red-700 bg-red-50" },
-    { label: "Cảnh báo vàng", value: String(beds.filter(item => item.status === "yellow").length), tone: "text-amber-700 bg-amber-50" },
-    { label: "Thiếu sinh hiệu", value: String(beds.filter(item => item.status === "incomplete").length), tone: "text-slate-600 bg-slate-100" },
+    { label: "Cảnh báo đỏ", value: String(beds.filter(item => item.status === "red").length), tone: "text-sptt-red bg-sptt-red-bg" },
+    { label: "Cảnh báo vàng", value: String(beds.filter(item => item.status === "yellow").length), tone: "text-sptt-yellow bg-sptt-yellow-bg" },
+    { label: "Thiếu sinh hiệu", value: String(beds.filter(item => item.status === "incomplete").length), tone: "text-sptt-incomplete bg-sptt-incomplete-bg" },
   ]
   return <>
     <div className="mb-5 flex flex-col justify-between gap-3 xl:flex-row xl:items-end">
@@ -697,30 +715,105 @@ function DashboardView({ beds, unread, flashingBed, isNurse, onOpen, onAlerts }:
 }
 
 function BedCard({ bed, flashing, isNurse, onOpen }: { bed: Bed; flashing: boolean; isNurse: boolean; onOpen: (bed: string) => void }) {
-  if (!bed.patient || !bed.values) return <Card className="min-h-64 border-dashed bg-subsurface opacity-70"><div className="flex h-full min-h-64 flex-col p-4"><span className="font-mono text-sm font-bold text-text-muted">{bed.code}</span><div className="flex flex-1 flex-col items-center justify-center text-text-muted"><SmallIcon name="bed" className="mb-2 h-7 w-7" /><span className="text-sm font-medium">Giường trống</span></div></div></Card>
-  const border = bed.status === "red" ? "border-red-300" : bed.status === "yellow" ? "border-amber-300" : "border-border-subtle"
+  if (!bed.patient || !bed.values) return (
+    <Card className="min-h-64 border-dashed bg-subsurface opacity-70 interactive-peek">
+      <div className="flex h-full min-h-64 flex-col p-4">
+        <Tooltip content="Giường trống sẵn sàng tiếp nhận bệnh nhân">
+          <span className="font-mono text-sm font-bold text-text-muted cursor-help">{bed.code}</span>
+        </Tooltip>
+        <div className="flex flex-1 flex-col items-center justify-center text-text-muted">
+          <SmallIcon name="bed" className="mb-2 h-7 w-7" />
+          <span className="text-sm font-medium">Giường trống</span>
+        </div>
+      </div>
+    </Card>
+  )
+  const border = bed.status === "red" ? "border-sptt-red-border shadow-[var(--halo-red-alert)]" : bed.status === "yellow" ? "border-sptt-yellow-border shadow-[var(--halo-yellow-alert)]" : bed.status === "incomplete" ? "border-dashed border-sptt-incomplete-border" : "border-border-subtle"
   const flash = flashing ? bed.status === "red" ? "animate-alert-red" : "animate-alert-yellow" : ""
   const status = bed.status === "red" ? ["red", "Cảnh báo đỏ"] : bed.status === "yellow" ? ["yellow", "Cảnh báo vàng"] : bed.status === "incomplete" ? ["missing", "Thiếu sinh hiệu · INCOMPLETE"] : ["normal", "Ổn định"]
-  return <Card className={`group overflow-hidden border-2 transition-all hover:-translate-y-0.5 hover:shadow-md ${border} ${flash}`}>
-    <div className="p-4">
-      <div className="mb-3 flex items-start justify-between">
-        <div><p className="font-mono text-sm font-bold text-brand-deep">GIƯỜNG {bed.code}</p><h3 className="mt-1 font-display text-base font-bold text-text-primary">{bed.patient.name}</h3><p className="text-xs text-text-muted">{bed.patient.id}</p></div>
-        <span className="rounded-md bg-subsurface px-2 py-1 text-xs font-medium text-text-secondary">Đo lúc {bed.measuredAt}</span>
+  const statusExplanation = bed.status === "red"
+    ? "Chỉ số nguy hiểm: Cần can thiệp y tế ngay."
+    : bed.status === "yellow"
+    ? "Chỉ số cảnh báo: Cần tăng tần suất theo dõi."
+    : bed.status === "incomplete"
+    ? "Chưa đủ 6 chỉ số sinh hiệu theo quy định."
+    : "Tất cả 6 chỉ số sinh hiệu trong giới hạn bình thường."
+
+  return (
+    <Card className={`group overflow-hidden border-2 transition-all hover:shadow-clinical-md interactive-peek ${border} ${flash}`}>
+      <div className="p-4">
+        <div className="mb-3 flex items-start justify-between">
+          <div>
+            <Tooltip content="Mã giường bệnh nội trú. Giường nguy kịch/cảnh báo được ưu tiên hiển thị trước.">
+              <p className="font-mono text-sm font-bold text-brand-deep cursor-help">GIƯỜNG {bed.code}</p>
+            </Tooltip>
+            <h3 className="mt-1 font-display text-base font-bold text-text-primary">{bed.patient.name}</h3>
+            <Tooltip content="Mã bệnh nhân">
+              <p className="text-xs text-text-muted cursor-help">{bed.patient.id}</p>
+            </Tooltip>
+          </div>
+          <Tooltip content={`Lần đo sinh hiệu gần nhất ghi nhận lúc ${bed.measuredAt}`}>
+            <span className="rounded-md bg-subsurface px-2 py-1 text-xs font-medium text-text-secondary cursor-help">Đo lúc {bed.measuredAt}</span>
+          </Tooltip>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {METRICS.map(item => {
+            const val = bed.values![item.key]
+            const level = classify(item.key, val)
+            const levelText = level === "red" ? "Nguy hiểm (Đỏ)" : level === "yellow" ? "Cảnh báo (Vàng)" : level === "missing" ? "Chưa đo (Thiếu)" : "Bình thường"
+            return (
+              <Tooltip
+                key={item.key}
+                position="top"
+                className="w-full"
+                content={
+                  <div className="space-y-1 text-left">
+                    <div className="flex items-center justify-between gap-2 font-semibold text-slate-100">
+                      <span>{item.label} ({item.unit})</span>
+                      <span className={`rounded px-1.5 py-0.5 text-[10px] font-mono font-bold uppercase ${
+                        level === "red" ? "bg-red-900/90 text-red-200" :
+                        level === "yellow" ? "bg-amber-900/90 text-amber-200" :
+                        level === "missing" ? "bg-slate-700 text-slate-300" :
+                        "bg-emerald-900/90 text-emerald-200"
+                      }`}>
+                        {levelText}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-300">{item.helper}</p>
+                    {level === "red" && (
+                      <p className="border-t border-red-800/60 pt-1 text-[10px] font-medium text-red-300">
+                        Ngưỡng nguy hiểm
+                      </p>
+                    )}
+                    {level === "yellow" && (
+                      <p className="border-t border-amber-800/60 pt-1 text-[10px] font-medium text-amber-300">
+                        Ngưỡng cảnh báo
+                      </p>
+                    )}
+                  </div>
+                }
+              >
+                <div className={`w-full rounded-lg border px-2 py-2 transition-all hover:border-brand-primary/60 cursor-help ${levelClasses[level]}`}>
+                  <p className="text-[10px] font-medium opacity-80">{item.short}</p>
+                  <p className="mt-0.5 font-mono text-xs font-bold">{formatValue(item.key, val, true)}</p>
+                </div>
+              </Tooltip>
+            )
+          })}
+        </div>
       </div>
-      <div className="grid grid-cols-3 gap-2">
-        {METRICS.map(item => {
-          const level = classify(item.key, bed.values![item.key])
-          return <div key={item.key} className={`rounded-lg border px-2 py-2 ${levelClasses[level]}`}><p className="text-[10px] font-medium opacity-80">{item.short}</p><p className="mt-0.5 font-mono text-xs font-bold">{formatValue(item.key, bed.values![item.key], true)}</p></div>
-        })}
+      <div className="flex items-center justify-between border-t border-border-subtle bg-canvas px-4 py-3">
+        <Tooltip content={statusExplanation} position="top">
+          <div className="cursor-help inline-flex">
+            <Chip level={status[0] as Level}>{status[1]}</Chip>
+          </div>
+        </Tooltip>
+        <Button variant="ghost" title={isNurse ? "Nhập sinh hiệu" : "Chỉ điều dưỡng được nhập sinh hiệu"} onClick={() => onOpen(bed.code)} className="flex items-center gap-1 !px-2 !py-1.5 text-xs text-brand-deep interactive-tactile">
+          {isNurse ? "Nhập sinh hiệu" : "Mở hồ sơ"} <SmallIcon name="chevron" className="h-4 w-4" />
+        </Button>
       </div>
-    </div>
-    <div className="flex items-center justify-between border-t border-border-subtle bg-canvas px-4 py-3">
-      <Chip level={status[0] as Level}>{status[1]}</Chip>
-      <Button variant="ghost" title={isNurse ? "Nhập sinh hiệu" : "Chỉ điều dưỡng được nhập sinh hiệu"} onClick={() => onOpen(bed.code)} className="flex items-center gap-1 !px-2 !py-1.5 text-xs text-brand-deep">
-        {isNurse ? "Nhập sinh hiệu" : "Mở hồ sơ"} <SmallIcon name="chevron" className="h-4 w-4" />
-      </Button>
-    </div>
-  </Card>
+    </Card>
+  )
 }
 
 function AlertsView({ alerts, filter, onFilter, onOpen, onAcknowledge, onBack }: {
