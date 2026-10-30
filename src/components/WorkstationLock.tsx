@@ -1,7 +1,7 @@
 import { useRef, useState, type FormEvent } from "react"
 import type { AuthUser } from "../App"
 import Button from "./ui/Button"
-import Icon from "./ui/Icon"
+import { AlertTriangle, Eye, EyeOff, Lock, User } from "lucide-react"
 import Modal from "./ui/Modal"
 
 const stayLocked = () => {}
@@ -69,14 +69,11 @@ export default function WorkstationLock({
       <form onSubmit={submit}>
         <div className="p-6 sm:p-8">
           <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-brand-surface text-brand-deep">
-            <Icon className="h-7 w-7">
-              <rect x="4" y="10" width="16" height="11" rx="2" />
-              <path d="M8 10V7a4 4 0 018 0v3m-4 5v2" />
-            </Icon>
+            <Lock aria-hidden="true" strokeWidth={1.75} className="h-7 w-7" />
           </div>
           <h2
             id="workstation-title"
-            className="text-center font-display text-2xl font-semibold text-text-primary"
+            className="text-center font-heading text-2xl font-semibold text-text-primary"
           >
             Phiên làm việc đã tự động khóa
           </h2>
@@ -88,10 +85,7 @@ export default function WorkstationLock({
             động khóa để bảo mật dữ liệu bệnh án (CON-06).
           </p>
           <div className="mt-6 flex items-center justify-center gap-2 rounded-full border border-border-subtle bg-canvas px-4 py-3 text-center text-xs font-medium text-text-secondary">
-            <Icon className="h-4 w-4 shrink-0">
-              <circle cx="12" cy="8" r="4" />
-              <path d="M4 21v-2a8 8 0 0116 0v2" />
-            </Icon>
+            <User aria-hidden="true" strokeWidth={1.75} className="h-4 w-4 shrink-0" />
             <span>
               {user.name}
               {user.department ? ` - ${user.department}` : ""} ({username})
@@ -100,7 +94,7 @@ export default function WorkstationLock({
           <div className="mt-6">
             <label
               htmlFor="unlock-password"
-              className="mb-2 block text-sm font-medium text-text-secondary"
+              className="mb-2 block font-heading text-[13px] font-semibold text-text-secondary"
             >
               Nhập mật khẩu để mở khóa màn hình
             </label>
@@ -121,30 +115,28 @@ export default function WorkstationLock({
                 aria-describedby={
                   error ? "unlock-error unlock-warning" : "unlock-warning"
                 }
-                className="w-full rounded-lg border border-border-subtle bg-canvas py-2.5 pl-3 pr-12 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                className="w-full rounded-lg border border-border-strong bg-surface py-2.5 pl-3 pr-12 text-sm text-text-primary placeholder:text-text-disabled transition-[border-color,box-shadow] duration-150 focus:border-brand-primary focus:outline-none focus:ring-3 focus:ring-brand-primary/20 aria-[invalid=true]:border-[1.5px] aria-[invalid=true]:border-critical aria-[invalid=true]:bg-critical-bg"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((value) => !value)}
                 aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                 aria-pressed={showPassword}
-                className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-lg text-text-muted hover:text-brand-deep"
+                className="absolute inset-y-0 right-0 flex w-11 cursor-pointer items-center justify-center rounded-r-lg text-text-muted transition-colors hover:text-brand-deep"
               >
-                <Icon>
-                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
-                  <circle cx="12" cy="12" r="3" />
-                  {showPassword && <path d="M3 3l18 18" />}
-                </Icon>
+                {showPassword ? (
+                  <EyeOff aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
+                ) : (
+                  <Eye aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
+                )}
               </button>
             </div>
           </div>
           <div
             id="unlock-warning"
-            className="mt-4 flex items-start gap-2 rounded-lg border border-warning/20 bg-warning-bg p-3 text-xs leading-relaxed text-warning"
+            className="mt-4 flex items-start gap-2 rounded-lg border border-sptt-yellow-border/40 bg-sptt-yellow-bg p-3 text-xs leading-relaxed text-sptt-yellow"
           >
-            <Icon className="h-4 w-4 shrink-0">
-              <path d="M12 3L2 21h20L12 3zm0 6v5m0 3h.01" />
-            </Icon>
+            <AlertTriangle aria-hidden="true" strokeWidth={1.75} className="h-4 w-4 shrink-0" />
             <p>
               Nhập sai mật khẩu quá 3 lần sẽ hủy phiên và yêu cầu xác thực lại
               với MFA.
@@ -154,7 +146,7 @@ export default function WorkstationLock({
             <p
               id="unlock-error"
               role="alert"
-              className="mt-4 rounded-lg border border-critical-border bg-critical-bg p-3 text-sm text-critical"
+              className="mt-4 rounded-lg border border-cpoe-block-border bg-cpoe-block-bg p-3 text-sm text-cpoe-block"
             >
               {error}
             </p>

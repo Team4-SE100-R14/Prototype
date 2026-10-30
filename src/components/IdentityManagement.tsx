@@ -1,4 +1,16 @@
 import { useMemo, useState, type ReactNode } from 'react'
+import {
+  ChevronLeft,
+  ChevronRight,
+  Lock,
+  LockOpen,
+  Plus,
+  RotateCcw,
+  Search,
+  ShieldCheck,
+  ShieldPlus,
+  X,
+} from 'lucide-react'
 import Modal from './ui/Modal'
 
 type AdminStatus = 'Đang hoạt động' | 'Đã khóa'
@@ -48,27 +60,6 @@ const ADMIN_ACCOUNTS: AdminAccount[] = [
   },
 ]
 
-function Icon({
-  children,
-  className = 'h-4 w-4',
-}: {
-  children: ReactNode
-  className?: string
-}) {
-  return (
-    <svg
-      aria-hidden="true"
-      className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
-      {children}
-    </svg>
-  )
-}
-
 function FieldLabel({ children }: { children: ReactNode }) {
   return <label className="mb-1.5 block text-xs font-semibold text-slate-700">{children}</label>
 }
@@ -91,9 +82,7 @@ function CreateAdminModal({ onClose }: { onClose: () => void }) {
             onClick={onClose}
             type="button"
           >
-            <Icon>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M18 6 6 18" />
-            </Icon>
+            <X aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
           </button>
         </div>
 
@@ -159,9 +148,7 @@ function CreateAdminModal({ onClose }: { onClose: () => void }) {
                 >
                   <option>Admin - Quản trị viên cơ sở</option>
                 </select>
-                <Icon className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 10V7a4 4 0 118 0v3m-9 0h10a1 1 0 011 1v8H6v-8a1 1 0 011-1z" />
-                </Icon>
+                <Lock aria-hidden="true" strokeWidth={1.75} className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               </div>
               <p className="mt-1.5 text-xs text-slate-400">Vai trò mặc định cho tài khoản quản trị mới.</p>
             </div>
@@ -212,10 +199,7 @@ export default function IdentityManagement() {
       <section>
         <div className="mb-5">
           <div className="flex items-center gap-2 text-xs font-medium text-cyan-700">
-            <Icon className="h-4 w-4">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l7 3v5c0 4.7-2.8 8-7 10-4.2-2-7-5.3-7-10V6l7-3z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9.5 12l1.5 1.5 3.5-4" />
-            </Icon>
+            <ShieldCheck aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
             Kiểm soát truy cập quản trị
           </div>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">
@@ -230,10 +214,7 @@ export default function IdentityManagement() {
           <div className="flex flex-col justify-between gap-3 xl:flex-row">
             <div className="flex flex-1 flex-col gap-3 sm:flex-row">
               <div className="relative min-w-0 flex-1 xl:max-w-sm">
-                <Icon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400">
-                  <circle cx="11" cy="11" r="7" />
-                  <path strokeLinecap="round" d="M16.5 16.5L21 21" />
-                </Icon>
+                <Search aria-hidden="true" strokeWidth={1.75} className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <input
                   aria-label="Tìm kiếm quản trị viên"
                   className="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-800 placeholder:text-slate-400"
@@ -271,9 +252,7 @@ export default function IdentityManagement() {
                 onClick={() => setIsModalOpen(true)}
                 type="button"
               >
-                <Icon>
-                  <path strokeLinecap="round" d="M12 5v14M5 12h14" />
-                </Icon>
+                <Plus aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
                 Cấp tài khoản quản trị mới
               </button>
             </div>
@@ -339,10 +318,7 @@ export default function IdentityManagement() {
                           title="Phân quyền"
                           type="button"
                         >
-                          <Icon>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l7 3v5c0 4.7-2.8 8-7 10-4.2-2-7-5.3-7-10V6l7-3z" />
-                            <path strokeLinecap="round" d="M9 12h6M12 9v6" />
-                          </Icon>
+                          <ShieldPlus aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
                         </button>
                         <span
                           className="inline-flex"
@@ -365,19 +341,11 @@ export default function IdentityManagement() {
                               : account.status === 'Đã khóa' ? 'Mở khóa tài khoản' : 'Khóa tài khoản'}
                             type="button"
                           >
-                            <Icon>
-                              {account.status === 'Đã khóa' ? (
-                                <>
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M7 10V7a5 5 0 019.5-2" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 10h12v10H6z" />
-                                </>
-                              ) : (
-                                <>
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 10V7a4 4 0 118 0v3" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 10h12v10H6z" />
-                                </>
-                              )}
-                            </Icon>
+                            {account.status === 'Đã khóa' ? (
+                              <LockOpen aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
+                            ) : (
+                              <Lock aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
+                            )}
                           </button>
                         </span>
                         <button
@@ -386,10 +354,7 @@ export default function IdentityManagement() {
                           title="Đặt lại mật khẩu"
                           type="button"
                         >
-                          <Icon>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M20 7v5h-5M19 12a7 7 0 10-2 5" />
-                            <path strokeLinecap="round" d="M12 9v4l2.5 1.5" />
-                          </Icon>
+                          <RotateCcw aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
                         </button>
                       </div>
                     </td>
@@ -413,9 +378,7 @@ export default function IdentityManagement() {
                 className="rounded-md border border-slate-200 bg-white p-1.5 text-slate-400 hover:bg-slate-50"
                 type="button"
               >
-                <Icon>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 18l-6-6 6-6" />
-                </Icon>
+                <ChevronLeft aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
               </button>
               <span className="text-xs font-medium text-slate-600">Trang 1 / 4</span>
               <button
@@ -423,9 +386,7 @@ export default function IdentityManagement() {
                 className="rounded-md border border-slate-200 bg-white p-1.5 text-slate-600 hover:bg-slate-50"
                 type="button"
               >
-                <Icon>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 6l6 6-6 6" />
-                </Icon>
+                <ChevronRight aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
               </button>
             </div>
           </div>

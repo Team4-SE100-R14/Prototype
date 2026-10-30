@@ -1,4 +1,18 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import {
+  Calendar,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Eye,
+  FileText,
+  RefreshCw,
+  Search,
+  ShieldAlert,
+  ShieldCheck,
+  X,
+} from 'lucide-react'
 import { AUDIT_EVENT, AUDIT_KEY, readSecurityAudit } from '../lib/sessionSecurity'
 
 interface Props {
@@ -109,27 +123,6 @@ const EXPORTS = [
   },
 ]
 
-function Icon({
-  children,
-  className = 'h-4 w-4',
-}: {
-  children: ReactNode
-  className?: string
-}) {
-  return (
-    <svg
-      aria-hidden="true"
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      viewBox="0 0 24 24"
-    >
-      {children}
-    </svg>
-  )
-}
-
 function FieldLabel({ children }: { children: ReactNode }) {
   return <label className="mb-1.5 block text-xs font-semibold text-slate-700">{children}</label>
 }
@@ -155,9 +148,7 @@ function AuditDrawer({ entry, onClose }: { entry: AuditEntry; onClose: () => voi
         <div className="flex items-start justify-between border-b border-slate-200 px-6 py-5">
           <div>
             <div className="mb-1 flex items-center gap-2 text-xs font-medium text-cyan-700">
-              <Icon>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 5h16v14H4zM8 9h8M8 13h5" />
-              </Icon>
+              <FileText aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
               Bản ghi kiểm toán bất biến
             </div>
             <h2 className="text-xl font-semibold text-slate-900" id="audit-drawer-title">
@@ -171,9 +162,7 @@ function AuditDrawer({ entry, onClose }: { entry: AuditEntry; onClose: () => voi
             onClick={onClose}
             type="button"
           >
-            <Icon>
-              <path strokeLinecap="round" d="M6 6l12 12M18 6 6 18" />
-            </Icon>
+            <X aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
           </button>
         </div>
 
@@ -276,9 +265,7 @@ function AuditTable() {
     <>
       <div className="mb-5">
         <div className="flex items-center gap-2 text-xs font-medium text-cyan-700">
-          <Icon>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 5h16v14H4zM8 9h8M8 13h5" />
-          </Icon>
+          <FileText aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
           Báo cáo tuân thủ và truy vết
         </div>
         <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">
@@ -294,9 +281,7 @@ function AuditTable() {
           <div>
             <FieldLabel>Khoảng thời gian</FieldLabel>
             <div className="relative">
-              <Icon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 5h14v15H5zM8 3v4M16 3v4M5 9h14" />
-              </Icon>
+              <Calendar aria-hidden="true" strokeWidth={1.75} className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
                 className="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-700"
                 onChange={(event) => setDateRange(event.target.value)}
@@ -338,10 +323,7 @@ function AuditTable() {
           <div className="min-w-0 flex-1">
             <FieldLabel>Từ khóa / Mã đối tượng</FieldLabel>
             <div className="relative">
-              <Icon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400">
-                <circle cx="11" cy="11" r="7" />
-                <path strokeLinecap="round" d="M16.5 16.5L21 21" />
-              </Icon>
+              <Search aria-hidden="true" strokeWidth={1.75} className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
                 className="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400"
                 onChange={(event) => setQuery(event.target.value)}
@@ -358,10 +340,7 @@ function AuditTable() {
               Đặt lại bộ lọc
             </button>
             <button className="inline-flex items-center justify-center gap-2 rounded-lg bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-cyan-700" type="button">
-              <Icon>
-                <circle cx="11" cy="11" r="7" />
-                <path strokeLinecap="round" d="M16.5 16.5L21 21" />
-              </Icon>
+              <Search aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
               Tra cứu nhật ký
             </button>
           </div>
@@ -415,10 +394,7 @@ function AuditTable() {
                       onClick={() => setSelectedEntry(entry)}
                       type="button"
                     >
-                      <Icon>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z" />
-                        <circle cx="12" cy="12" r="2.5" />
-                      </Icon>
+                      <Eye aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
                       Xem Diff JSON
                     </button>
                   </td>
@@ -428,21 +404,18 @@ function AuditTable() {
           </table>
         </div>
         <div className="flex items-center gap-2 border-t border-cyan-100 bg-cyan-50 px-4 py-3 text-xs text-cyan-800">
-          <Icon className="h-4 w-4 flex-shrink-0">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l7 3v5c0 4.7-2.8 8-7 10-4.2-2-7-5.3-7-10V6l7-3z" />
-            <path strokeLinecap="round" d="M12 8v5M12 16h.01" />
-          </Icon>
+          <ShieldAlert aria-hidden="true" strokeWidth={1.75} className="h-4 w-4 flex-shrink-0" />
           <strong>Quy tắc an ninh:</strong> Nhật ký kiểm toán có tính bất biến Append-Only, không thể sửa xóa.
         </div>
         <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50/60 px-4 py-3">
           <p className="text-xs text-slate-500">Hiển thị 6 sự kiện mới nhất</p>
           <div className="flex items-center gap-2">
             <button aria-label="Trang trước" className="rounded-md border border-slate-200 bg-white p-1.5 text-slate-400" type="button">
-              <Icon><path strokeLinecap="round" strokeLinejoin="round" d="M15 18l-6-6 6-6" /></Icon>
+              <ChevronLeft aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
             </button>
             <span className="text-xs font-medium text-slate-600">Trang 1 / 75</span>
             <button aria-label="Trang sau" className="rounded-md border border-slate-200 bg-white p-1.5 text-slate-600 hover:bg-slate-50" type="button">
-              <Icon><path strokeLinecap="round" strokeLinejoin="round" d="M9 6l6 6-6 6" /></Icon>
+              <ChevronRight aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -461,10 +434,7 @@ function ForensicExport() {
     <div>
       <div className="mb-5">
         <div className="flex items-center gap-2 text-xs font-medium text-purple-700">
-          <Icon>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l7 3v5c0 4.7-2.8 8-7 10-4.2-2-7-5.3-7-10V6l7-3z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9.5 12l1.5 1.5 3.5-4" />
-          </Icon>
+          <ShieldCheck aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
           Công cụ pháp y dành cho Quản trị viên
         </div>
         <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">
@@ -481,9 +451,7 @@ function ForensicExport() {
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <div className="relative flex-1">
-              <Icon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 5h14v15H5zM8 3v4M16 3v4M5 9h14" />
-              </Icon>
+              <Calendar aria-hidden="true" strokeWidth={1.75} className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input className="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-700" defaultValue="01/10/2026 - 05/10/2026" aria-label="Khoảng thời gian quét chuỗi băm" />
             </div>
             <button
@@ -491,14 +459,14 @@ function ForensicExport() {
               onClick={() => setScanComplete(true)}
               type="button"
             >
-              <Icon><path strokeLinecap="round" strokeLinejoin="round" d="M4 12a8 8 0 0114-5M20 12a8 8 0 01-14 5M18 4v4h-4M6 20v-4h4" /></Icon>
+              <RefreshCw aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
               Bắt đầu quét toàn vẹn chuỗi
             </button>
           </div>
           {scanComplete && (
             <div className="mt-4 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
               <div className="rounded-full bg-emerald-600 p-2 text-white">
-                <Icon><path strokeLinecap="round" strokeLinejoin="round" d="M5 12l4 4L19 6" /></Icon>
+                <Check aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
               </div>
               <div>
                 <div className="font-semibold text-emerald-800">Trạng thái: 100% Chuỗi toàn vẹn</div>
@@ -535,7 +503,7 @@ function ForensicExport() {
               <input className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-700 placeholder:text-slate-400" placeholder="Nhập lý do hoặc mã yêu cầu..." />
             </div>
             <button className="inline-flex items-center justify-center gap-2 rounded-lg bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-cyan-700" type="button">
-              <Icon><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v12M7 10l5 5 5-5M5 19h14" /></Icon>
+              <Download aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
               Ký số &amp; Tải về bảo mật
             </button>
           </div>

@@ -8,7 +8,7 @@ import {
   remainingSeconds,
   PROTOTYPE_MFA_CODE,
 } from "../lib/totp"
-import Icon from "./ui/Icon"
+import { AlertCircle, Copy, ShieldCheck, X } from "lucide-react"
 import Modal from "./ui/Modal"
 import Button from "./ui/Button"
 import { consumeRecoveryCode, normalizeRecoveryCode } from "../lib/mfaLifecycle"
@@ -17,17 +17,12 @@ import { TextInput } from "./ui/TextInput"
 const ERROR_MESSAGE =
   "Mã xác thực không hợp lệ. Vui lòng nhập mã thử nghiệm 481920."
 const GHOST =
-  "rounded-lg px-4 py-2.5 text-sm font-semibold text-text-secondary transition-colors hover:bg-subsurface disabled:cursor-not-allowed"
+  "cursor-pointer rounded-lg px-4 py-2.5 font-heading text-sm font-semibold text-text-secondary transition-colors hover:bg-subsurface disabled:cursor-not-allowed"
 const INPUT =
-  "w-full rounded-lg border border-border-subtle bg-canvas px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary"
+  "w-full rounded-lg border border-border-strong bg-surface px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-brand-primary focus:outline-none focus:ring-3 focus:ring-brand-primary/20"
 
 function Shield() {
-  return (
-    <Icon className="h-6 w-6">
-      <path d="M12 3l7 3v5c0 4.7-2.8 8-7 10-4.2-2-7-5.3-7-10V6l7-3z" />
-      <path d="M9.5 12l1.5 1.5 3.5-4" />
-    </Icon>
-  )
+  return <ShieldCheck aria-hidden="true" strokeWidth={1.75} className="h-6 w-6" />
 }
 
 export default function MfaModal({
@@ -193,9 +188,7 @@ export default function MfaModal({
           onClick={onCancel}
           className="rounded-md p-1.5 text-text-muted hover:bg-subsurface hover:text-text-secondary"
         >
-          <Icon className="h-4 w-4">
-            <path d="M6 6l12 12M18 6L6 18" />
-          </Icon>
+          <X aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
         </button>
       </div>
 
@@ -260,10 +253,7 @@ export default function MfaModal({
                       onClick={copySecret}
                       className={`${GHOST} flex shrink-0 items-center justify-center gap-2 border border-border-subtle`}
                     >
-                      <Icon className="h-4 w-4">
-                        <rect x="8" y="8" width="12" height="12" rx="2" />
-                        <path d="M16 8V4H4v12h4" />
-                      </Icon>
+                      <Copy aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
                       {copied ? "Đã sao chép" : "Sao chép mã"}
                     </button>
                   </div>
@@ -460,10 +450,7 @@ export default function MfaModal({
               role="alert"
               className="flex items-start gap-3 rounded-lg border border-critical-border bg-critical-bg p-4 text-sm leading-relaxed text-critical"
             >
-              <Icon className="mt-0.5 h-5 w-5 shrink-0">
-                <circle cx="12" cy="12" r="9" />
-                <path d="M12 8v4m0 4h.01" />
-              </Icon>
+              <AlertCircle aria-hidden="true" strokeWidth={1.75} className="mt-0.5 h-5 w-5 shrink-0" />
               <p>{error}</p>
             </div>
           )}

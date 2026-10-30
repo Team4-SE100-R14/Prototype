@@ -2,7 +2,7 @@ import { useCallback, useState, type FormEvent } from "react"
 import { regenerateRecoveryCodes } from "../lib/mfaLifecycle"
 import { PROTOTYPE_MFA_CODE } from "../lib/totp"
 import Button from "./ui/Button"
-import Icon from "./ui/Icon"
+import { Copy, Download, Eye, EyeOff } from "lucide-react"
 import Modal from "./ui/Modal"
 import { SecurityAlert, SecurityDialogHeader } from "./ui/SecurityDialog"
 import { TextInput } from "./ui/TextInput"
@@ -85,11 +85,11 @@ export function RecoveryStepUpModal({
                 aria-label={visible ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                 className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-text-muted"
               >
-                <Icon>
-                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
-                  <circle cx="12" cy="12" r="3" />
-                  {visible && <path d="M3 3l18 18" />}
-                </Icon>
+                {visible ? (
+                  <EyeOff aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
+                ) : (
+                  <Eye aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
+                )}
               </button>
             </div>
           </div>
@@ -229,10 +229,7 @@ export function NewRecoveryCodesModal({
             onClick={copy}
             className="flex items-center justify-center gap-2 border border-border-subtle"
           >
-            <Icon className="h-4 w-4">
-              <rect x="8" y="8" width="12" height="12" rx="2" />
-              <path d="M16 8V4H4v12h4" />
-            </Icon>
+            <Copy aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
             Sao chép tất cả 8 mã
           </Button>
           <Button
@@ -240,9 +237,7 @@ export function NewRecoveryCodesModal({
             onClick={download}
             className="flex items-center justify-center gap-2 border border-border-subtle"
           >
-            <Icon className="h-4 w-4">
-              <path d="M12 3v12m-4-4l4 4 4-4M4 17v4h16v-4" />
-            </Icon>
+            <Download aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
             Tải về tệp văn bản (.txt)
           </Button>
         </div>

@@ -2,7 +2,7 @@ import { useMemo, useState } from "react"
 import type { AuthUser } from "../../App"
 import TopNav from "../TopNav"
 import Button from "../ui/Button"
-import Icon from "../ui/Icon"
+import { UserPlus } from "lucide-react"
 import { CLINICAL_PATIENTS } from "../../lib/clinicalWorkflow"
 import IntakeQueueBoard from "../intake/IntakeQueueBoard"
 
@@ -65,11 +65,7 @@ export default function PatientQueue({
           </div>
           <div className="flex items-center gap-3 rounded-xl border border-border-subtle bg-surface px-4 py-3 shadow-sm">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-surface text-brand-deep">
-              <Icon className="h-5 w-5">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M19 8v6M22 11h-6" />
-              </Icon>
+              <UserPlus aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
             </span>
             <div>
               <div className="text-xs font-medium text-text-muted">

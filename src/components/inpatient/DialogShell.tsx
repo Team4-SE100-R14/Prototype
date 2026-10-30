@@ -27,12 +27,12 @@ export default function DialogShell({
     >
       <div className="flex items-center justify-between border-b border-border-subtle px-6 py-5">
         <div>
-          <div className="mb-1 text-xs font-bold uppercase tracking-widest text-brand-deep">
+          <div className="mb-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-deep">
             {eyebrow}
           </div>
           <h2
             id={`${id}-title`}
-            className="text-xl font-extrabold text-text-primary"
+            className="font-heading text-lg font-bold text-text-primary"
           >
             {title}
           </h2>
@@ -41,7 +41,7 @@ export default function DialogShell({
           type="button"
           aria-label="Đóng"
           onClick={onClose}
-          className="rounded-lg p-2 text-text-muted hover:bg-subsurface hover:text-text-primary"
+          className="cursor-pointer rounded-lg p-2 text-text-muted transition-colors hover:bg-subsurface hover:text-text-primary"
         >
           <NamedIcon name="close" />
         </button>
@@ -64,11 +64,11 @@ export function ErrorBanner({
   return (
     <div
       role="alert"
-      className="mb-5 flex items-start gap-3 rounded-xl border border-critical-border bg-critical-bg p-4 text-sm leading-6 text-critical"
+      className="mb-5 flex items-start gap-3 rounded-xl border border-cpoe-block-border bg-cpoe-block-bg p-4 text-sm leading-6 text-cpoe-block"
     >
       <NamedIcon name="alert" className="mt-0.5 size-5 shrink-0" />
       <div>
-        <strong className="block">{title}</strong>
+        <strong className="block font-heading">{title}</strong>
         {children}
       </div>
     </div>
