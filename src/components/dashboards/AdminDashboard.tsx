@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import type { AuthUser } from '../../App'
 import TopNav from '../TopNav'
 import AuditLogPage from '../AuditLogPage'
+import IdentityManagement from '../IdentityManagement'
 import ReportsPage from '../reports/ReportsPage'
 import NamedIcon from '../ui/NamedIcon'
 import Pagination from '../ui/Pagination'
@@ -41,7 +42,7 @@ const SHIFTS = [
 ]
 
 export default function AdminDashboard({ user, onLogout }: Props) {
-  const [tab, setTab] = useState<'clinics' | 'beds' | 'shifts' | 'formulary' | 'reports' | 'audit'>('clinics')
+  const [tab, setTab] = useState<'clinics' | 'accounts' | 'beds' | 'shifts' | 'formulary' | 'reports' | 'audit'>('clinics')
   const [clinicPage, setClinicPage] = useState(1)
   const [clinicPageSize, setClinicPageSize] = useState(4)
 
@@ -94,6 +95,7 @@ export default function AdminDashboard({ user, onLogout }: Props) {
 
   const TABS = [
     { id: 'clinics', label: 'Hàng đợi phòng khám' },
+    { id: 'accounts', label: 'Tài khoản bệnh viện' },
     { id: 'beds', label: 'Công suất giường bệnh' },
     { id: 'shifts', label: 'Ca trực bác sĩ' },
     { id: 'formulary', label: 'Danh mục thuốc' },
@@ -107,7 +109,7 @@ export default function AdminDashboard({ user, onLogout }: Props) {
 
       <div className="mx-auto w-full max-w-7xl flex-1 p-4 lg:p-6">
         {/* Stats */}
-        {tab !== 'audit' && tab !== 'reports' && (
+        {tab !== 'audit' && tab !== 'reports' && tab !== 'accounts' && (
           <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
             {[
               { label: 'Tổng lượt khám hôm nay', value: '312', sub: '+18 so với hôm qua', color: 'text-brand-deep', bg: 'bg-brand-surface border-brand-primary/25', tooltip: 'Tổng số lượt khám bệnh đã được tiếp đón và kích hoạt trên toàn viện từ 00:00 hôm nay' },
@@ -377,6 +379,8 @@ export default function AdminDashboard({ user, onLogout }: Props) {
             />
           </div>
         )}
+
+        {tab === 'accounts' && <IdentityManagement currentUser={user} />}
 
         {tab === 'reports' && <ReportsPage user={user} />}
         {tab === 'audit' && <AuditLogPage />}
