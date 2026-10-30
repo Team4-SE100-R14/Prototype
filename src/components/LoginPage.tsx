@@ -1,6 +1,14 @@
 import { useEffect, useState, type FormEvent } from "react"
 import type { AuthUser, UserRole } from "../App"
-import Icon from "./ui/Icon"
+import {
+  AlertCircle,
+  ArrowRight,
+  Eye,
+  EyeOff,
+  HeartPulse,
+  Lock,
+  ShieldCheck,
+} from "lucide-react"
 
 interface DemoUser {
   password: string
@@ -139,16 +147,14 @@ export default function LoginPage({ onLogin, demoUsers }: Props) {
   }
 
   return (
-    <main className="min-h-screen bg-canvas flex flex-col items-center justify-center px-4 py-10 sm:px-6">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-canvas px-4 py-10 sm:px-6">
       <div className="w-full max-w-2xl">
         <div className="mb-7 flex items-center justify-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-deep text-surface">
-            <Icon className="h-6 w-6">
-              <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </Icon>
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-deep text-surface shadow-clinical-xs">
+            <HeartPulse aria-hidden="true" strokeWidth={1.75} className="h-6 w-6" />
           </div>
           <div>
-            <p className="font-display text-lg font-bold leading-tight text-text-primary">
+            <p className="font-heading text-lg font-bold leading-tight text-text-primary">
               HPMS
             </p>
             <p className="text-xs text-text-muted">
@@ -159,10 +165,10 @@ export default function LoginPage({ onLogin, demoUsers }: Props) {
 
         <section
           aria-labelledby="login-title"
-          className="rounded-xl border border-border-subtle bg-surface shadow-sm"
+          className="rounded-2xl border border-border-subtle bg-surface shadow-clinical-sm"
         >
           <div className="border-b border-border-subtle px-5 py-5 sm:px-8">
-            <p className="mb-3 text-xs font-medium text-text-muted">
+            <p className="mb-3 font-heading text-xs font-semibold text-text-muted">
               Chọn vai trò đăng nhập
             </p>
             <div
@@ -176,10 +182,10 @@ export default function LoginPage({ onLogin, demoUsers }: Props) {
                   type="button"
                   aria-pressed={selected === name}
                   onClick={() => selectRole(name)}
-                  className={`shrink-0 rounded-full border px-3 py-2 text-xs font-medium transition-colors ${
+                  className={`shrink-0 cursor-pointer rounded-full border px-3 py-2 font-heading text-xs font-semibold transition-colors duration-150 ${
                     selected === name
                       ? "border-brand-primary bg-brand-surface text-brand-deep"
-                      : "border-border-subtle bg-surface text-text-secondary hover:bg-subsurface"
+                      : "border-border-strong bg-surface text-text-secondary hover:bg-subsurface"
                   }`}
                 >
                   {label}
@@ -191,7 +197,7 @@ export default function LoginPage({ onLogin, demoUsers }: Props) {
           <div className="p-5 sm:p-8">
             <h1
               id="login-title"
-              className="font-display text-2xl font-semibold text-text-primary"
+              className="font-heading text-2xl font-semibold text-text-primary"
             >
               Đăng nhập Hệ thống HPMS
             </h1>
@@ -203,7 +209,7 @@ export default function LoginPage({ onLogin, demoUsers }: Props) {
               <div>
                 <label
                   htmlFor="username"
-                  className="mb-1.5 block text-sm font-medium text-text-secondary"
+                  className="mb-1.5 block font-heading text-[13px] font-semibold text-text-secondary"
                 >
                   Tên đăng nhập / Mã định danh
                 </label>
@@ -218,7 +224,7 @@ export default function LoginPage({ onLogin, demoUsers }: Props) {
                     setNow(Date.now())
                   }}
                   placeholder="Nhập username, mã NV-xxxx hoặc BN-xxxx"
-                  className="w-full px-3 py-2.5 text-sm border border-border-subtle rounded-lg bg-canvas text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all"
+                  className="w-full rounded-lg border border-border-strong bg-surface px-3 py-2.5 text-sm text-text-primary placeholder:text-text-disabled transition-[border-color,box-shadow] duration-150 focus:border-brand-primary focus:outline-none focus:ring-3 focus:ring-brand-primary/20 aria-[invalid=true]:border-[1.5px] aria-[invalid=true]:border-critical aria-[invalid=true]:bg-critical-bg"
                   autoComplete="username"
                   autoCapitalize="none"
                   spellCheck={false}
@@ -236,7 +242,7 @@ export default function LoginPage({ onLogin, demoUsers }: Props) {
               <div>
                 <label
                   htmlFor="password"
-                  className="mb-1.5 block text-sm font-medium text-text-secondary"
+                  className="mb-1.5 block font-heading text-[13px] font-semibold text-text-secondary"
                 >
                   Mật khẩu
                 </label>
@@ -250,7 +256,7 @@ export default function LoginPage({ onLogin, demoUsers }: Props) {
                       setError("")
                     }}
                     placeholder="Tối thiểu 8 ký tự"
-                    className="w-full pl-3 pr-12 py-2.5 text-sm border border-border-subtle rounded-lg bg-canvas text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all"
+                    className="w-full rounded-lg border border-border-strong bg-surface py-2.5 pl-3 pr-12 text-sm text-text-primary placeholder:text-text-disabled transition-[border-color,box-shadow] duration-150 focus:border-brand-primary focus:outline-none focus:ring-3 focus:ring-brand-primary/20 aria-[invalid=true]:border-[1.5px] aria-[invalid=true]:border-critical aria-[invalid=true]:bg-critical-bg"
                     autoComplete="current-password"
                     required
                     aria-invalid={!!error}
@@ -261,13 +267,13 @@ export default function LoginPage({ onLogin, demoUsers }: Props) {
                     onClick={() => setShowPassword((value) => !value)}
                     aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                     aria-pressed={showPassword}
-                    className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-lg text-text-muted hover:text-brand-deep"
+                    className="absolute inset-y-0 right-0 flex w-11 cursor-pointer items-center justify-center rounded-r-lg text-text-muted transition-colors hover:text-brand-deep"
                   >
-                    <Icon>
-                      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
-                      <circle cx="12" cy="12" r="3" />
-                      {showPassword && <path d="M3 3l18 18" />}
-                    </Icon>
+                    {showPassword ? (
+                      <EyeOff aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
+                    ) : (
+                      <Eye aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -278,7 +284,7 @@ export default function LoginPage({ onLogin, demoUsers }: Props) {
                     type="checkbox"
                     checked={remember}
                     onChange={(event) => setRemember(event.target.checked)}
-                    className="h-4 w-4 rounded border-border-strong accent-brand-primary"
+                    className="h-4 w-4 cursor-pointer rounded-xs border-border-strong accent-brand-deep"
                   />
                   Ghi nhớ phiên đăng nhập
                 </label>
@@ -287,7 +293,7 @@ export default function LoginPage({ onLogin, demoUsers }: Props) {
                   onClick={() => setShowRecovery((value) => !value)}
                   aria-expanded={showRecovery}
                   aria-controls="password-recovery"
-                  className="font-medium text-brand-deep hover:underline"
+                  className="cursor-pointer font-heading font-semibold text-brand-deep hover:underline"
                 >
                   Quên mật khẩu?
                 </button>
@@ -297,7 +303,7 @@ export default function LoginPage({ onLogin, demoUsers }: Props) {
                 <div
                   id="password-recovery"
                   role="status"
-                  className="rounded-lg border border-border-subtle bg-brand-surface p-3 text-sm leading-relaxed text-brand-deep"
+                  className="rounded-lg border border-brand-primary/30 bg-brand-surface p-3 text-sm leading-relaxed text-brand-deep"
                 >
                   Vui lòng liên hệ Quản trị viên để xác minh danh tính và được
                   hỗ trợ đặt lại mật khẩu.
@@ -308,12 +314,9 @@ export default function LoginPage({ onLogin, demoUsers }: Props) {
                 <div
                   id="login-error"
                   role="alert"
-                  className="flex items-start gap-2 rounded-lg border border-critical-border bg-critical-bg p-3 text-sm text-critical"
+                  className="flex items-start gap-2 rounded-lg border border-cpoe-block-border bg-cpoe-block-bg p-3 text-sm text-cpoe-block"
                 >
-                  <Icon className="h-5 w-5 shrink-0">
-                    <circle cx="12" cy="12" r="9" />
-                    <path d="M12 8v4m0 4h.01" />
-                  </Icon>
+                  <AlertCircle aria-hidden="true" strokeWidth={1.75} className="h-5 w-5 shrink-0" />
                   <p>{error}</p>
                 </div>
               )}
@@ -321,28 +324,23 @@ export default function LoginPage({ onLogin, demoUsers }: Props) {
               <button
                 type="submit"
                 disabled={!username.trim() || !password || secondsLeft > 0}
-                className="w-full py-2.5 px-4 bg-brand-primary hover:bg-brand-deep disabled:bg-subsurface disabled:text-text-muted disabled:cursor-not-allowed text-surface text-sm font-semibold rounded-lg transition-all duration-150 flex items-center justify-center gap-2"
+                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-brand-deep px-4 py-2.5 font-heading text-sm font-semibold text-surface shadow-clinical-xs transition-colors duration-150 hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-subsurface disabled:text-text-disabled"
               >
                 Đăng nhập vào hệ thống
-                <Icon className="h-4 w-4">
-                  <path d="M5 12h14m-5-5l5 5-5 5" />
-                </Icon>
+                <ArrowRight aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
               </button>
 
               {secondsLeft > 0 && (
                 <div
                   id="lockout-message"
                   role="alert"
-                  className="flex items-start gap-3 rounded-lg border border-critical-border bg-critical-bg p-4 text-sm leading-relaxed text-critical"
+                  className="flex items-start gap-3 rounded-lg border border-cpoe-block-border bg-cpoe-block-bg p-4 text-sm leading-relaxed text-cpoe-block"
                 >
-                  <Icon className="mt-0.5 h-5 w-5 shrink-0">
-                    <rect x="4" y="10" width="16" height="11" rx="2" />
-                    <path d="M8 10V7a4 4 0 018 0v3m-4 5v2" />
-                  </Icon>
+                  <Lock aria-hidden="true" strokeWidth={1.75} className="mt-0.5 h-5 w-5 shrink-0" />
                   <p>
                     Tài khoản bị tạm khóa 15 phút do nhập sai mật khẩu quá 5 lần
                     liên tiếp. Thời gian mở khóa còn lại:{" "}
-                    <strong className="font-mono">{countdown}</strong>. Liên hệ
+                    <strong className="font-mono tabular-nums">{countdown}</strong>. Liên hệ
                     Quản trị viên để được mở khóa sớm.
                   </p>
                 </div>
@@ -357,10 +355,7 @@ export default function LoginPage({ onLogin, demoUsers }: Props) {
           </div>
         </section>
         <footer className="mt-6 flex items-start justify-center gap-2 text-center text-xs leading-relaxed text-text-muted">
-          <Icon className="mt-0.5 h-4 w-4 shrink-0">
-            <path d="M12 3l8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3z" />
-            <path d="M8 12l3 3 5-6" />
-          </Icon>
+          <ShieldCheck aria-hidden="true" strokeWidth={1.75} className="mt-0.5 h-4 w-4 shrink-0" />
           <p>
             Hệ thống Quản lý Bệnh viện &amp; Bệnh nhân HPMS - Tiêu chuẩn bảo mật
             TLS 1.3

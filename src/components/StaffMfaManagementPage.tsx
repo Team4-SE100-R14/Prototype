@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import type { AuthUser } from "../App"
 import useMfaRegistry from "../hooks/useMfaRegistry"
 import {
@@ -9,6 +9,7 @@ import {
 import AdminMfaResetModal from "./AdminMfaResetModal"
 import TopNav from "./TopNav"
 import Button from "./ui/Button"
+import Pagination from "./ui/Pagination"
 import { SecurityAlert } from "./ui/SecurityDialog"
 
 export default function StaffMfaManagementPage({
@@ -34,11 +35,26 @@ export default function StaffMfaManagementPage({
     receptionist: "Tiếp đón",
   }
   if (user.role !== "admin") return null
-  const list = staff.filter((account) =>
-    `${account.user.name} ${account.username} ${account.employeeId}`
-      .toLocaleLowerCase("vi")
-      .includes(query.toLocaleLowerCase("vi")),
-  )
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(5)
+
+  const list = useMemo(() => {
+    return staff.filter((account) =>
+      `${account.user.name} ${account.username} ${account.employeeId}`
+        .toLocaleLowerCase("vi")
+        .includes(query.toLocaleLowerCase("vi")),
+    )
+  }, [staff, query])
+
+  useEffect(() => {
+    setPage(1)
+  }, [query])
+
+  const totalPages = Math.max(1, Math.ceil(list.length / pageSize))
+  const paginatedList = useMemo(() => {
+    const start = (page - 1) * pageSize
+    return list.slice(start, start + pageSize)
+  }, [list, page, pageSize])
   return (
     <div className="min-h-screen bg-canvas">
       <TopNav user={user} onLogout={onLogout} title="Quản lý MFA nhân viên" />
@@ -110,7 +126,7 @@ export default function StaffMfaManagementPage({
                 </tr>
               </thead>
               <tbody>
-                {list.map((account) => {
+                {paginatedList.map((account) => {
                   const state =
                     registry[account.user.id] || readMfaState(account.user.id)
                   const own = account.user.id === user.id
@@ -183,6 +199,16 @@ export default function StaffMfaManagementPage({
               </p>
             )}
           </div>
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalItems={list.length}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            pageSizeOptions={[5, 10, 20]}
+            itemLabel="nhân viên"
+          />
         </div>
       </main>
       {target && (

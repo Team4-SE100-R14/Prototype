@@ -8,11 +8,12 @@ import {
 import type { UserRole } from "../../App"
 import Button from "../ui/Button"
 import NamedIcon from "../ui/NamedIcon"
+import Tooltip from "../ui/Tooltip"
 
 const STATE_STYLES = {
-  empty: "border-emerald-200 bg-emerald-50/35",
-  occupied: "border-blue-200 bg-white",
-  maintenance: "border-slate-200 bg-slate-50",
+  empty: "border-bed-available-border bg-bed-available-bg/55",
+  occupied: "border-bed-occupied-border bg-bed-occupied-bg/55",
+  maintenance: "border-bed-maintenance-border bg-bed-maintenance-bg bed-maintenance-hatch",
 }
 
 export default function BedCard({
@@ -34,41 +35,58 @@ export default function BedCard({
 }) {
   const [menu, setMenu] = useState(false)
 
+  const alertHalo =
+    bed.status === "occupied" && bed.alert === "critical"
+      ? "border-2 !border-sptt-red-border shadow-[var(--halo-red-alert)]"
+      : bed.status === "occupied" && bed.alert === "warning"
+        ? "border-2 !border-sptt-yellow-border shadow-[var(--halo-yellow-alert)]"
+        : ""
+
   return (
     <article
-      className={`relative min-h-56 rounded-xl border p-4 transition hover:-translate-y-0.5 hover:shadow-md ${
+      className={`relative min-h-56 rounded-xl border p-4 shadow-clinical-xs interactive-peek transition-[border-color,box-shadow,background-color] duration-150 hover:shadow-clinical-sm ${
         STATE_STYLES[bed.status]
-      }`}
+      } ${alertHalo}`}
     >
       <div className="mb-4 flex items-start justify-between">
         <div>
-          <div className="text-xs font-bold tracking-wide text-slate-500">
+          <div className="font-mono text-xs font-bold tracking-wide text-text-secondary">
             {bed.code}
           </div>
-          <div
-            className={`mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold ${
+          <Tooltip
+            content={
               bed.status === "empty"
-                ? "bg-emerald-100 text-emerald-700"
+                ? "Giường trống sẵn sàng tiếp nhận bệnh nhân nội trú mới"
                 : bed.status === "occupied"
-                  ? "bg-blue-100 text-blue-700"
-                  : "bg-slate-200 text-slate-600"
-            }`}
+                  ? "Giường đang điều trị • Bệnh án nội trú liên kết hợp lệ"
+                  : "Đang khử khuẩn / bảo trì buồng bệnh • Cần điều dưỡng xác nhận sẵn sàng"
+            }
           >
-            <span
-              className={`size-1.5 rounded-full ${
+            <div
+              className={`mt-2 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-heading text-xs font-semibold cursor-help ${
                 bed.status === "empty"
-                  ? "bg-emerald-500"
+                  ? "border-bed-available-border/40 bg-bed-available-bg text-bed-available"
                   : bed.status === "occupied"
-                    ? "bg-blue-500"
-                    : "bg-slate-400"
+                    ? "border-bed-occupied-border/40 bg-bed-occupied-bg text-bed-occupied"
+                    : "border-bed-maintenance-border bg-surface text-bed-maintenance"
               }`}
-            />
-            {bed.status === "empty"
-              ? "Trống"
-              : bed.status === "occupied"
-                ? "Đang sử dụng"
-                : "Bảo trì"}
-          </div>
+            >
+              <span
+                className={`size-1.5 rounded-full ${
+                  bed.status === "empty"
+                    ? "bg-bed-available-border"
+                    : bed.status === "occupied"
+                      ? "bg-bed-occupied-border"
+                      : "bg-bed-maintenance-border"
+                }`}
+              />
+              {bed.status === "empty"
+                ? "Trống"
+                : bed.status === "occupied"
+                  ? "Đang sử dụng"
+                  : "Bảo trì"}
+            </div>
+          </Tooltip>
         </div>
         {bed.status === "occupied" && record && (
           <div className="relative">
@@ -76,19 +94,19 @@ export default function BedCard({
               type="button"
               aria-label="Mở tùy chọn giường"
               onClick={() => setMenu(!menu)}
-              className="rounded-lg px-2 py-1 text-lg leading-none text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+              className="cursor-pointer rounded-lg p-1.5 text-text-muted transition-colors hover:bg-surface hover:text-text-primary"
             >
-              ⋮
+              <NamedIcon name="more-vertical" className="size-4" />
             </button>
             {menu && (
-              <div className="absolute right-0 top-9 z-20 w-36 overflow-hidden rounded-lg border border-slate-200 bg-white py-1 shadow-xl">
+              <div className="absolute right-0 top-9 z-40 w-36 overflow-hidden rounded-lg border border-border-subtle bg-surface-elevated py-1 shadow-clinical-md">
                 <button
                   type="button"
                   onClick={() => {
                     setMenu(false)
                     onViewRecord()
                   }}
-                  className="w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                  className="w-full cursor-pointer px-3 py-2 text-left font-heading text-xs font-semibold text-text-secondary transition-colors hover:bg-subsurface"
                 >
                   Xem bệnh án
                 </button>
@@ -99,7 +117,7 @@ export default function BedCard({
                       setMenu(false)
                       onTransfer()
                     }}
-                    className="w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                    className="w-full cursor-pointer px-3 py-2 text-left font-heading text-xs font-semibold text-text-secondary transition-colors hover:bg-subsurface"
                   >
                     Chuyển giường
                   </button>
@@ -114,11 +132,11 @@ export default function BedCard({
         <button
           type="button"
           onClick={onPickEmpty}
-          className="flex h-32 w-full flex-col items-center justify-center rounded-lg border border-dashed border-emerald-200 text-emerald-700 transition hover:border-emerald-400 hover:bg-emerald-50"
+          className="flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-bed-available-border/60 bg-surface/70 text-bed-available transition-colors duration-150 hover:border-bed-available-border hover:bg-bed-available-bg"
         >
-          <NamedIcon name="bed" className="mb-2 size-8" />
-          <span className="text-sm font-bold">Sẵn sàng</span>
-          <span className="mt-1 text-xs text-emerald-600">
+          <NamedIcon name="bed" className="mb-2 size-7" />
+          <span className="font-heading text-sm font-bold">Sẵn sàng</span>
+          <span className="mt-1 text-xs text-bed-available">
             Chọn để xếp giường
           </span>
         </button>
@@ -127,37 +145,47 @@ export default function BedCard({
       {bed.status === "occupied" && record && (
         <>
           {bed.alert && (
-            <div className="group absolute right-3 top-14 z-10">
-              <div
-                className={`flex size-8 items-center justify-center rounded-full text-white shadow-lg ${
-                  bed.alert === "critical"
-                    ? "animate-alert-red bg-red-500"
-                    : "animate-alert-yellow bg-amber-500"
-                }`}
+            <div className="absolute right-3 top-14 z-10">
+              <Tooltip
+                position="left"
+                content={
+                  <div className="space-y-0.5">
+                    <p className="font-bold text-slate-100">
+                      {bed.alert === "critical" ? "Nguy kịch (Cảnh báo đỏ)" : "Cảnh báo sớm (Vàng)"}
+                    </p>
+                    <p className="text-slate-300">{bed.alertText}</p>
+                  </div>
+                }
               >
-                <NamedIcon name="alert" className="size-4" />
-              </div>
-              <div className="pointer-events-none absolute right-0 top-10 w-max max-w-48 translate-y-1 rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white opacity-0 shadow-xl transition group-hover:translate-y-0 group-hover:opacity-100">
-                {bed.alert === "critical" ? "Nguy kịch" : "Cảnh báo"}:{" "}
-                {bed.alertText}
-              </div>
+                <div
+                  className={`flex size-8 items-center justify-center rounded-full text-surface shadow-clinical-md cursor-help ${
+                    bed.alert === "critical"
+                      ? "animate-alert-red bg-sptt-red-border"
+                      : "animate-alert-yellow bg-sptt-yellow-border"
+                  }`}
+                >
+                  <NamedIcon name="alert" className="size-4" />
+                </div>
+              </Tooltip>
             </div>
           )}
           <div className="mb-3 pr-8">
-            <div className="text-base font-extrabold text-slate-900">
+            <div className="font-heading text-base font-bold text-text-primary">
               {record.patientName}
             </div>
-            <div className="mt-1 text-xs font-bold text-cyan-700">
-              {record.patientCode} · {record.id}
-            </div>
+            <Tooltip content="Mã bệnh nhân & Số lưu trữ bệnh án nội trú">
+              <div className="mt-1 font-mono text-xs font-semibold text-brand-deep cursor-help">
+                {record.patientCode} · {record.id}
+              </div>
+            </Tooltip>
           </div>
-          <div className="space-y-2 border-t border-slate-100 pt-3 text-xs text-slate-600">
+          <div className="space-y-2 border-t border-border-subtle/80 pt-3 text-xs text-text-secondary">
             <div className="flex items-center gap-2">
-              <NamedIcon name="calendar" className="size-4 text-slate-400" />
-              <span>Nhập viện: {record.admittedAt}</span>
+              <NamedIcon name="calendar" className="size-4 text-text-muted" />
+              <span className="tabular-nums">Nhập viện: {record.admittedAt}</span>
             </div>
             <div className="flex items-center gap-2">
-              <NamedIcon name="stethoscope" className="size-4 text-slate-400" />
+              <NamedIcon name="stethoscope" className="size-4 text-text-muted" />
               <span>{record.doctor}</span>
             </div>
           </div>
@@ -166,8 +194,8 @@ export default function BedCard({
 
       {bed.status === "maintenance" && (
         <div className="flex h-32 flex-col items-center justify-center text-center">
-          <NamedIcon name="bed" className="mb-2 size-8 text-slate-400" />
-          <div className="text-sm font-semibold text-slate-600">
+          <NamedIcon name="sparkles" className="mb-2 size-7 text-bed-maintenance" />
+          <div className="font-heading text-sm font-semibold text-bed-maintenance">
             {bed.maintenance}
           </div>
           <Button

@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import type { AuthUser } from "../../App"
 import TopNav from "../TopNav"
 import Button from "../ui/Button"
-import Icon from "../ui/Icon"
+import Pagination from "../ui/Pagination"
+import { UserPlus } from "lucide-react"
 import { CLINICAL_PATIENTS } from "../../lib/clinicalWorkflow"
 import IntakeQueueBoard from "../intake/IntakeQueueBoard"
 
@@ -24,6 +25,9 @@ export default function PatientQueue({
     "all" | "emergency" | "normal"
   >("all")
 
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(5)
+
   const patients = useMemo(
     () =>
       CLINICAL_PATIENTS.filter(
@@ -31,6 +35,16 @@ export default function PatientQueue({
       ),
     [priority],
   )
+
+  useEffect(() => {
+    setPage(1)
+  }, [priority, room])
+
+  const totalPages = Math.max(1, Math.ceil(patients.length / pageSize))
+  const paginatedPatients = useMemo(() => {
+    const start = (page - 1) * pageSize
+    return patients.slice(start, start + pageSize)
+  }, [patients, page, pageSize])
 
   return (
     <div className={`${embedded ? "min-h-full" : "min-h-screen"} bg-canvas`}>
@@ -65,11 +79,7 @@ export default function PatientQueue({
           </div>
           <div className="flex items-center gap-3 rounded-xl border border-border-subtle bg-surface px-4 py-3 shadow-sm">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-surface text-brand-deep">
-              <Icon className="h-5 w-5">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M19 8v6M22 11h-6" />
-              </Icon>
+              <UserPlus aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
             </span>
             <div>
               <div className="text-xs font-medium text-text-muted">
@@ -141,7 +151,7 @@ export default function PatientQueue({
                 </tr>
               </thead>
               <tbody>
-                {patients.map((patient) => (
+                {paginatedPatients.map((patient) => (
                   <tr
                     key={patient.id}
                     className="border-t border-border-subtle bg-surface transition-colors hover:bg-canvas"
@@ -181,6 +191,16 @@ export default function PatientQueue({
               </tbody>
             </table>
           </div>
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalItems={patients.length}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            pageSizeOptions={[5, 10, 20]}
+            itemLabel="bệnh nhân"
+          />
         </section>
       </main>
     </div>

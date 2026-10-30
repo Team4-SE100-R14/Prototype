@@ -5,7 +5,7 @@ import {
   OUTPATIENT_DEPARTMENT,
   type Acuity,
 } from "../../lib/intakeQueue"
-import Icon from "../ui/Icon"
+import { AlertTriangle, Building2 } from "lucide-react"
 import { TextArea } from "../ui/TextInput"
 
 export interface TriageValue {
@@ -15,11 +15,11 @@ export interface TriageValue {
 }
 
 const SELECT =
-  "w-full rounded-lg border border-border-subtle bg-canvas px-3 py-2.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-primary"
+  "w-full rounded-lg border border-border-strong bg-surface px-3 py-2.5 text-sm text-text-primary transition-[border-color,box-shadow] duration-150 focus:border-brand-primary focus:outline-none focus:ring-3 focus:ring-brand-primary/20 aria-[invalid=true]:border-[1.5px] aria-[invalid=true]:border-critical aria-[invalid=true]:bg-critical-bg"
 
 function Label({ children, required }: { children: ReactNode; required?: boolean }) {
   return (
-    <span className="mb-1.5 block text-xs font-semibold text-text-secondary">
+    <span className="mb-1.5 block font-heading text-[13px] font-semibold text-text-secondary">
       {children}
       {required && (
         <span className="ml-1 text-critical" aria-hidden="true">
@@ -63,20 +63,20 @@ export default function IntakeTriagePanel({
         />
         <div className="mt-1 flex justify-between gap-3 text-xs">
           <p className="font-medium text-critical">{errors.complaint}</p>
-          <p className="shrink-0 text-text-muted">{value.complaint.length}/255</p>
+          <p className="shrink-0 font-mono tabular-nums text-text-muted">{value.complaint.length}/255</p>
         </div>
       </div>
 
       <fieldset>
-        <legend className="mb-2 text-xs font-semibold text-text-secondary">
+        <legend className="mb-2 font-heading text-[13px] font-semibold text-text-secondary">
           Phân loại tuyến khám <span className="text-critical">*</span>
         </legend>
         <div className="grid gap-3">
           <label
-            className={`cursor-pointer rounded-xl border p-4 transition-colors ${
+            className={`cursor-pointer rounded-xl border p-4 transition-colors duration-150 ${
               emergency
-                ? "border-critical bg-critical-bg ring-1 ring-critical"
-                : "border-critical-border bg-surface hover:bg-critical-bg"
+                ? "border-2 border-sptt-red-border bg-sptt-red-bg shadow-[var(--halo-red-alert)]"
+                : "border-cpoe-block-border/40 bg-surface hover:bg-sptt-red-bg"
             }`}
           >
             <input
@@ -89,26 +89,23 @@ export default function IntakeTriagePanel({
             />
             <span className="flex items-start gap-3">
               <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-critical text-surface">
-                <Icon className="h-5 w-5">
-                  <path d="M12 3L2 21h20L12 3zm0 6v5m0 3h.01" />
-                </Icon>
+                <AlertTriangle aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
               </span>
               <span>
-                <strong className="block text-sm text-critical">
+                <strong className="block font-heading text-sm text-sptt-red">
                   CẤP CỨU (EMERGENCY)
                 </strong>
                 <span className="mt-1 block text-xs leading-relaxed text-text-secondary">
-                  Ưu tiên mức 1. Tự động định tuyến thẳng vào Khoa Cấp cứu, kích
-                  hoạt thông báo SSE tức thì đến kíp trực cấp cứu.
+                  Ưu tiên 1. Chuyển ngay đến Khoa Cấp cứu để bác sĩ xử trí kịp thời.
                 </span>
               </span>
             </span>
           </label>
           <label
-            className={`cursor-pointer rounded-xl border p-4 transition-colors ${
+            className={`cursor-pointer rounded-xl border p-4 transition-colors duration-150 ${
               value.acuity === "NON_EMERGENCY"
-                ? "border-info bg-info-bg ring-1 ring-info"
-                : "border-border-subtle bg-surface hover:bg-info-bg"
+                ? "border-2 border-brand-primary bg-brand-surface"
+                : "border-border-strong bg-surface hover:bg-brand-surface/50"
             }`}
           >
             <input
@@ -120,18 +117,15 @@ export default function IntakeTriagePanel({
               className="sr-only"
             />
             <span className="flex items-start gap-3">
-              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-info text-surface">
-                <Icon className="h-5 w-5">
-                  <path d="M4 20v-7a3 3 0 013-3h10a3 3 0 013 3v7M9 10V4h6v6" />
-                </Icon>
+              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-deep text-surface">
+                <Building2 aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
               </span>
               <span>
-                <strong className="block text-sm text-info">
+                <strong className="block font-heading text-sm text-brand-deep">
                   KHÔNG CẤP CỨU (NON-EMERGENCY)
                 </strong>
                 <span className="mt-1 block text-xs leading-relaxed text-text-secondary">
-                  Ưu tiên mức 2. Xếp hàng FIFO tại phòng khám ngoại trú được
-                  chọn.
+                  Ưu tiên 2. Khám theo số thứ tự tại phòng khám chuyên khoa.
                 </span>
               </span>
             </span>
@@ -180,31 +174,30 @@ export default function IntakeTriagePanel({
           ) : emergency ? (
             <div>
               <div className="flex flex-wrap gap-2">
-                <span className="rounded-full bg-critical-bg px-3 py-1.5 text-xs font-semibold text-critical">
+                <span className="rounded-full border border-sptt-red-border/40 bg-sptt-red-bg px-3 py-1 font-heading text-xs font-semibold text-sptt-red">
                   {EMERGENCY_DEPARTMENT}
                 </span>
-                <span className="rounded-full bg-critical px-3 py-1.5 text-xs font-semibold text-surface">
-                  Ưu tiên 1 (MucUuTien=1)
+                <span className="rounded-full bg-critical px-3 py-1 font-heading text-xs font-semibold text-surface">
+                  Ưu tiên 1
                 </span>
               </div>
               <p className="mt-3 text-xs leading-relaxed text-text-secondary">
-                Tự động định tuyến thẳng, thông báo SSE &lt;= 1.0s tới kíp cấp
-                cứu.
+                Chuyển trực tiếp tới Khoa Cấp cứu.
               </p>
             </div>
           ) : (
             <div>
               <div className="flex flex-wrap gap-2">
-                <span className="rounded-full bg-info-bg px-3 py-1.5 text-xs font-semibold text-info">
+                <span className="rounded-full border border-brand-primary/30 bg-brand-surface px-3 py-1 font-heading text-xs font-semibold text-brand-deep">
                   {OUTPATIENT_DEPARTMENT}
                   {value.clinic ? ` - ${value.clinic}` : ""}
                 </span>
-                <span className="rounded-full bg-info px-3 py-1.5 text-xs font-semibold text-surface">
-                  Ưu tiên 2 (MucUuTien=2)
+                <span className="rounded-full bg-brand-deep px-3 py-1 font-heading text-xs font-semibold text-surface">
+                  Ưu tiên 2
                 </span>
               </div>
               <p className="mt-3 text-xs leading-relaxed text-text-secondary">
-                Xếp hàng FIFO theo số thứ tự (SoThuTu).
+                Khám theo số thứ tự tiếp nhận.
               </p>
             </div>
           )}

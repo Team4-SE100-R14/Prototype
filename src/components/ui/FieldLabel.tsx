@@ -12,7 +12,7 @@ export default function FieldLabel({
   return (
     <label
       htmlFor={htmlFor}
-      className="mb-1.5 block text-sm font-semibold text-text-secondary"
+      className="mb-1.5 block font-heading text-[13px] leading-[1.35] font-semibold text-text-secondary"
     >
       {children} {required && <span className="text-critical">*</span>}
     </label>

@@ -1,5 +1,5 @@
+import { Clock } from "lucide-react"
 import Button from "./ui/Button"
-import Icon from "./ui/Icon"
 import Modal from "./ui/Modal"
 
 const keepWarning = () => {}
@@ -22,10 +22,7 @@ export default function SessionExpiryModal({
     >
       <div className="flex items-start gap-3 border-b border-border-subtle px-6 py-5">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-warning-bg text-warning">
-          <Icon className="h-6 w-6">
-            <circle cx="12" cy="12" r="9" />
-            <path d="M12 7v5l3 2" />
-          </Icon>
+          <Clock aria-hidden="true" strokeWidth={1.75} className="h-6 w-6" />
         </div>
         <h2
           id="expiry-title"

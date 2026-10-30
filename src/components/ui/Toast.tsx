@@ -14,28 +14,28 @@ export function Toast({
 }) {
   return (
     <div
-      className={`fixed bottom-6 right-6 z-[70] flex max-w-md items-start gap-3 rounded-xl border bg-surface p-4 shadow-2xl ${
-        tone === "success" ? "border-normal/30" : "border-critical-border"
+      className={`animate-fade-in fixed bottom-6 right-6 z-[70] flex max-w-md items-start gap-3 rounded-lg border bg-surface p-4 shadow-clinical-lg ${
+        tone === "success" ? "border-sptt-stable-border" : "border-sptt-red-border"
       }`}
       role="status"
     >
       <div
         className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full ${
           tone === "success"
-            ? "bg-normal-bg text-normal"
-            : "bg-critical-bg text-critical"
+            ? "bg-sptt-stable-bg text-sptt-stable"
+            : "bg-sptt-red-bg text-sptt-red"
         }`}
       >
         {tone === "success" ? (
-          <span className="text-sm font-black">✓</span>
+          <NamedIcon name="check" className="size-4" />
         ) : (
           <NamedIcon name="alert" className="size-4" />
         )}
       </div>
       <div className="flex-1">
         <div
-          className={`text-xs font-bold uppercase tracking-wide ${
-            tone === "success" ? "text-normal" : "text-critical"
+          className={`font-heading text-xs font-bold uppercase tracking-wide ${
+            tone === "success" ? "text-sptt-stable" : "text-sptt-red"
           }`}
         >
           {tone === "success" ? "Thành công" : "Không thể thực hiện"}
@@ -48,7 +48,7 @@ export function Toast({
         type="button"
         aria-label="Đóng thông báo"
         onClick={onClose}
-        className="rounded-md p-1 text-text-muted hover:bg-subsurface"
+        className="cursor-pointer rounded-md p-1 text-text-muted transition-colors hover:bg-subsurface hover:text-text-primary"
       >
         <NamedIcon name="close" className="size-4" />
       </button>

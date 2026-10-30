@@ -7,7 +7,7 @@ import {
   readIntakeQueue,
   type IntakeEncounter,
 } from "../../lib/intakeQueue"
-import Icon from "../ui/Icon"
+import { AlertTriangle, X } from "lucide-react"
 
 interface Arrival {
   encounter: IntakeEncounter
@@ -61,24 +61,22 @@ export default function EmergencyArrivalBanner({ user }: { user: AuthUser }) {
         <div
           key={encounter.id}
           role="alert"
-          className="pointer-events-auto rounded-xl border border-critical-border bg-critical-bg p-4 shadow-lg"
+          className="animate-fade-in pointer-events-auto rounded-2xl border-2 border-sptt-red-border bg-sptt-red-bg p-4 shadow-clinical-lg"
         >
           <div className="flex items-start gap-3">
             <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-critical text-surface">
-              <Icon className="h-5 w-5">
-                <path d="M12 3L2 21h20L12 3zm0 6v5m0 3h.01" />
-              </Icon>
+              <AlertTriangle aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-critical">
+              <p className="font-heading text-sm font-bold text-sptt-red">
                 Bệnh nhân CẤP CỨU mới (Ưu tiên 1)
               </p>
-              <p className="mt-1 text-sm font-semibold text-text-primary">
-                {encounter.hoTen} · {encounter.maBenhNhan}
+              <p className="mt-1 font-heading text-sm font-semibold text-text-primary">
+                {encounter.hoTen} · <span className="font-mono">{encounter.maBenhNhan}</span>
               </p>
               <p className="mt-0.5 text-xs text-text-secondary">{encounter.lyDoKham}</p>
-              <p className="mt-1.5 font-mono text-xs text-text-muted">
-                {destinationLabel(encounter)} · SSE nhận sau {latencyMs} ms
+              <p className="mt-1.5 font-mono text-xs tabular-nums text-text-muted">
+                {destinationLabel(encounter)} · Tiếp nhận tức thì
               </p>
             </div>
             <button
@@ -89,11 +87,9 @@ export default function EmergencyArrivalBanner({ user }: { user: AuthUser }) {
                   current.filter((item) => item.encounter.id !== encounter.id),
                 )
               }
-              className="cursor-pointer rounded-md p-1 text-text-muted hover:bg-critical/10"
+              className="cursor-pointer rounded-md p-1 text-text-muted transition-colors hover:bg-critical/10 hover:text-sptt-red"
             >
-              <Icon className="h-4 w-4">
-                <path d="M6 6l12 12M18 6L6 18" />
-              </Icon>
+              <X aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
             </button>
           </div>
         </div>

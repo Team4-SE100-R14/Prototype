@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { useSessionSecurity } from "./SessionSecurity"
-import Icon from "./ui/Icon"
+import { ShieldCheck } from "lucide-react"
 
 export default function SessionSecurityMenu() {
   const controls = useSessionSecurity()
@@ -39,21 +39,18 @@ export default function SessionSecurityMenu() {
         aria-expanded={open}
         aria-controls="session-security-menu"
         onClick={() => setOpen((value) => !value)}
-        className="flex items-center gap-2 rounded-lg border border-border-subtle bg-surface px-2.5 py-2 text-xs font-medium text-text-secondary hover:bg-subsurface"
+        className="flex cursor-pointer items-center gap-2 rounded-lg border border-border-strong bg-surface px-2.5 py-1.5 font-heading text-xs font-semibold text-text-secondary transition-colors duration-150 hover:bg-subsurface"
       >
-        <Icon className="h-4 w-4">
-          <path d="M12 3l7 3v5c0 4.7-2.8 8-7 10-4.2-2-7-5.3-7-10V6l7-3z" />
-          <path d="M9.5 12l1.5 1.5 3.5-4" />
-        </Icon>
+        <ShieldCheck aria-hidden="true" strokeWidth={1.75} className="h-4 w-4 text-brand-deep" />
         <span className="hidden lg:inline">Bảo mật phiên</span>
       </button>
       {open && (
         <div
           id="session-security-menu"
-          className="absolute right-0 top-full mt-2 w-72 overflow-hidden rounded-xl border border-border-subtle bg-surface shadow-lg"
+          className="animate-fade-in absolute right-0 top-full z-40 mt-2 w-72 overflow-hidden rounded-xl border border-border-subtle bg-surface-elevated shadow-clinical-md"
         >
           <div className="border-b border-border-subtle bg-canvas px-4 py-3">
-            <p className="text-xs font-semibold text-text-primary">
+            <p className="font-heading text-xs font-semibold text-text-primary">
               Mô phỏng bảo mật phiên
             </p>
             <p className="mt-1 text-xs text-text-muted">
@@ -66,7 +63,7 @@ export default function SessionSecurityMenu() {
             <button
               type="button"
               onClick={() => perform(controls.openAccountSecurity)}
-              className="w-full rounded-lg px-3 py-2.5 text-left text-sm text-text-secondary hover:bg-subsurface"
+              className="w-full cursor-pointer rounded-lg px-3 py-2.5 text-left text-sm text-text-secondary transition-colors hover:bg-subsurface"
             >
               Bảo mật tài khoản
             </button>
@@ -74,7 +71,7 @@ export default function SessionSecurityMenu() {
               <button
                 type="button"
                 onClick={() => perform(controls.openStaffDirectory!)}
-                className="w-full rounded-lg px-3 py-2.5 text-left text-sm text-text-secondary hover:bg-subsurface"
+                className="w-full cursor-pointer rounded-lg px-3 py-2.5 text-left text-sm text-text-secondary transition-colors hover:bg-subsurface"
               >
                 Quản lý MFA nhân viên
               </button>
@@ -83,7 +80,7 @@ export default function SessionSecurityMenu() {
               <button
                 type="button"
                 onClick={() => perform(controls.simulateLock)}
-                className="w-full rounded-lg px-3 py-2.5 text-left text-sm text-text-secondary hover:bg-subsurface"
+                className="w-full cursor-pointer rounded-lg px-3 py-2.5 text-left text-sm text-text-secondary transition-colors hover:bg-subsurface"
               >
                 Mô phỏng khóa máy trạm
               </button>
@@ -91,14 +88,14 @@ export default function SessionSecurityMenu() {
             <button
               type="button"
               onClick={() => perform(controls.simulateExpiry)}
-              className="w-full rounded-lg px-3 py-2.5 text-left text-sm text-text-secondary hover:bg-subsurface"
+              className="w-full cursor-pointer rounded-lg px-3 py-2.5 text-left text-sm text-text-secondary transition-colors hover:bg-subsurface"
             >
               Mô phỏng hết hạn phiên
             </button>
             <button
               type="button"
               onClick={() => perform(controls.checkAccess)}
-              className="w-full rounded-lg px-3 py-2.5 text-left text-sm text-text-secondary hover:bg-subsurface"
+              className="w-full cursor-pointer rounded-lg px-3 py-2.5 text-left text-sm text-text-secondary transition-colors hover:bg-subsurface"
             >
               Kiểm tra quyền truy cập bệnh án
             </button>

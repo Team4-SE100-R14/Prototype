@@ -15,7 +15,8 @@ import useInpatient from "../../hooks/useInpatient"
 import { activeRecordFor, canAdmit } from "../../lib/inpatient"
 import AdmissionModal from "../inpatient/AdmissionModal"
 import Button from "../ui/Button"
-import Icon from "../ui/Icon"
+import Tooltip from "../ui/Tooltip"
+import { AlertTriangle, Check, Lock, Plus, Search } from "lucide-react"
 import { TextArea, TextInput } from "../ui/TextInput"
 import ClinicalOrderModal from "./ClinicalOrderModal"
 import DoctorEncounterHeader from "./DoctorEncounterHeader"
@@ -230,9 +231,7 @@ export default function ClinicalExamPage({
             role="status"
             className="mb-5 flex items-start gap-3 rounded-xl border border-normal/20 bg-normal-bg p-4 text-sm font-semibold text-normal"
           >
-            <Icon className="h-5 w-5 shrink-0">
-              <path d="m5 12 4 4L19 6" />
-            </Icon>
+            <Check aria-hidden="true" strokeWidth={1.75} className="h-5 w-5 shrink-0" />
             {notice}
           </div>
         )}
@@ -259,13 +258,12 @@ export default function ClinicalExamPage({
             title="Hồ sơ sức khỏe"
             description="Tự động truy vấn khi gọi bệnh nhân · Chỉ đọc"
             action={
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle bg-canvas px-3 py-1 text-xs font-semibold text-text-secondary">
-                <Icon className="h-3.5 w-3.5">
-                  <rect x="5" y="11" width="14" height="9" rx="2" />
-                  <path d="M8 11V8a4 4 0 0 1 8 0v3" />
-                </Icon>
-                Chỉ đọc
-              </span>
+              <Tooltip content="Dữ liệu từ hồ sơ bệnh nhân. Không chỉnh sửa trực tiếp.">
+                <span className="cursor-help inline-flex items-center gap-1.5 rounded-full border border-border-subtle bg-canvas px-3 py-1 text-xs font-semibold text-text-secondary">
+                  <Lock aria-hidden="true" strokeWidth={2} className="h-3.5 w-3.5" />
+                  Chỉ đọc
+                </span>
+              </Tooltip>
             }
           >
             <div>
@@ -273,28 +271,28 @@ export default function ClinicalExamPage({
                 Tiền sử dị ứng thuốc
               </div>
               {patient.allergyAlert ? (
-              <div
-                role="alert"
-                className="flex items-start gap-3 rounded-xl border border-critical-border bg-critical-bg p-4 text-critical"
+              <Tooltip
+                content="Tiền sử dị ứng: Hệ thống sẽ chặn nếu kê thuốc chứa hoạt chất này."
+                className="w-full"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-critical text-surface">
-                  <Icon className="h-5 w-5">
-                    <path d="M12 3 2.7 20h18.6L12 3Z" />
-                    <path d="M12 9v4M12 17h.01" />
-                  </Icon>
-                </span>
-                <div>
-                  <div className="font-bold">Cảnh báo dị ứng:</div>
-                  <div className="mt-1 text-sm font-medium">
-                    {patient.allergyAlert}
+                <div
+                  role="alert"
+                  className="w-full cursor-help flex items-start gap-3 rounded-xl border border-critical-border bg-critical-bg p-4 text-critical interactive-peek"
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-critical text-surface">
+                    <AlertTriangle aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <div className="font-bold">Cảnh báo dị ứng:</div>
+                    <div className="mt-1 text-sm font-medium">
+                      {patient.allergyAlert}
+                    </div>
                   </div>
                 </div>
-              </div>
+              </Tooltip>
             ) : (
               <div className="flex items-center gap-3 rounded-xl border border-normal/20 bg-normal-bg p-4 text-normal">
-                <Icon className="h-5 w-5">
-                  <path d="m5 12 4 4L19 6" />
-                </Icon>
+                <Check aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
                 <span className="text-sm font-semibold">
                   Chưa ghi nhận tiền sử dị ứng.
                 </span>
@@ -368,9 +366,7 @@ export default function ClinicalExamPage({
                 disabled={locked}
                 onClick={() => setOrderOpen(true)}
               >
-                <Icon className="mr-2 inline h-4 w-4">
-                  <path d="M12 5v14M5 12h14" />
-                </Icon>
+                <Plus aria-hidden="true" strokeWidth={1.75} className="mr-2 inline h-4 w-4" />
                 Chỉ định CLS mới
               </Button>
             }
@@ -494,9 +490,9 @@ export default function ClinicalExamPage({
             </Field>
             {locked && (
               <div className="space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-normal/20 bg-normal-bg p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border-strong border-l-4 border-l-text-secondary bg-subsurface p-4">
                   <div>
-                    <div className="font-semibold text-normal">
+                    <div className="font-heading font-semibold text-text-primary">
                       Bệnh án đã được khóa bất biến
                     </div>
                     <div className="mt-1 text-xs text-text-secondary">
@@ -511,7 +507,7 @@ export default function ClinicalExamPage({
                 {addenda.map((addendum, index) => (
                   <div
                     key={addendum.id}
-                    className="rounded-lg border border-border-subtle bg-canvas p-4"
+                    className="rounded-xl border border-border-subtle border-l-4 border-l-brand-primary bg-surface p-4 shadow-clinical-xs"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="text-sm font-semibold text-text-primary">
@@ -535,10 +531,7 @@ export default function ClinicalExamPage({
       <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-border-subtle bg-surface/95 px-4 py-3 shadow-lg backdrop-blur sm:px-6 ${embedded ? "lg:left-60" : ""}`}>
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs font-medium text-text-muted">
-            <Icon className="h-4 w-4">
-              <rect x="5" y="10" width="14" height="10" rx="2" />
-              <path d="M8 10V7a4 4 0 0 1 8 0v3" />
-            </Icon>
+            <Lock aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
             {awaitingResults || !hasCompletedResult
               ? "Đang chờ đầy đủ kết quả CLS trước khi ký duyệt."
               : "Sau khi ký duyệt, phiếu khám không thể chỉnh sửa trực tiếp."}
@@ -583,6 +576,7 @@ export default function ClinicalExamPage({
               Lưu nháp
             </Button>
             <Button
+              variant="success"
               disabled={locked}
               onClick={completeExam}
               title={
@@ -591,9 +585,7 @@ export default function ClinicalExamPage({
                   : undefined
               }
             >
-              <Icon className="mr-2 inline h-4 w-4">
-                <path d="M5 12.5 9.5 17 19 7" />
-              </Icon>
+              <Check aria-hidden="true" strokeWidth={1.75} className="mr-2 inline h-4 w-4" />
               {locked ? "Phiếu khám đã khóa" : "Ký duyệt & Hoàn tất khám"}
             </Button>
           </div>
@@ -706,13 +698,20 @@ function OrderStatusBadge({ status }: { status: ClinicalOrder["status"] }) {
     processing: "Đang thực hiện",
     completed: "Đã có kết quả",
   }
+  const explanations = {
+    pending: "Chờ thực hiện: Y lệnh đã gửi sang phòng cận lâm sàng, đang chờ tiếp nhận bệnh nhân/mẫu",
+    processing: "Đang thực hiện: Kỹ thuật viên đang tiến hành xét nghiệm / chụp chiếu",
+    completed: "Đã có kết quả: Đã hoàn tất và ký duyệt, sẵn sàng đối chiếu kết luận",
+  }
 
   return (
-    <span
-      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${styles[status]}`}
-    >
-      {labels[status]}
-    </span>
+    <Tooltip content={explanations[status]}>
+      <span
+        className={`cursor-help inline-flex rounded-full px-3 py-1 text-xs font-semibold ${styles[status]}`}
+      >
+        {labels[status]}
+      </span>
+    </Tooltip>
   )
 }
 
@@ -780,10 +779,7 @@ function IcdPicker({
   return (
     <>
       <div className="relative">
-        <Icon className="absolute left-3 top-3.5 h-4 w-4 text-text-muted">
-          <circle cx="11" cy="11" r="7" />
-          <path d="m20 20-4-4" />
-        </Icon>
+        <Search aria-hidden="true" strokeWidth={1.75} className="absolute left-3 top-3.5 h-4 w-4 text-text-muted" />
         <TextInput
           value={value}
           disabled={disabled}

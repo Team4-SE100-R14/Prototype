@@ -27,7 +27,7 @@ export default function Modal({
     const focusable = () =>
       Array.from(
         panel.current?.querySelectorAll<HTMLElement>(
-          'button:not(:disabled), input:not(:disabled), select:not(:disabled), a[href], [tabindex="0"]',
+          'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex="0"]',
         ) || [],
       )
     const initial =
@@ -73,10 +73,10 @@ export default function Modal({
 
   return createPortal(
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${
+      className={`fixed inset-0 flex items-center justify-center p-4 ${
         backdrop === "workstation"
-          ? "bg-text-primary/95 backdrop-blur-2xl"
-          : "bg-slate-950/40 backdrop-blur-[1px]"
+          ? "z-[70] bg-slate-950/92 backdrop-blur-xl"
+          : "z-[60] bg-slate-900/55 backdrop-blur-[2px]"
       }`}
       role="presentation"
       onMouseDown={(event) => {
@@ -88,7 +88,7 @@ export default function Modal({
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
         aria-modal="true"
-        className={`max-h-full w-full ${widthClass} overflow-y-auto rounded-xl border border-border-subtle bg-surface shadow-2xl`}
+        className={`animate-fade-in max-h-full w-full ${widthClass} overflow-y-auto rounded-2xl border border-border-subtle bg-surface shadow-clinical-xl`}
         role="dialog"
       >
         {children}

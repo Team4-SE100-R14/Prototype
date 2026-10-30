@@ -1,7 +1,7 @@
+import { AlertCircle, ShieldAlert } from "lucide-react"
 import type { AuthUser, UserRole } from "../App"
 import TopNav from "./TopNav"
 import Button from "./ui/Button"
-import Icon from "./ui/Icon"
 
 const ROLES: Record<UserRole, string> = {
   admin: "Quản trị viên (Admin)",
@@ -36,15 +36,9 @@ export default function ForbiddenPage({
           className="w-full max-w-2xl rounded-xl border border-border-subtle bg-surface p-6 text-center shadow-sm sm:p-8"
         >
           <div className="relative mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-critical-bg text-critical">
-            <Icon className="h-11 w-11">
-              <path d="M12 3l7 3v5c0 4.7-2.8 8-7 10-4.2-2-7-5.3-7-10V6l7-3z" />
-              <rect x="8" y="10" width="8" height="6" rx="1" />
-              <path d="M10 10V8a2 2 0 014 0v2" />
-            </Icon>
+            <ShieldAlert aria-hidden="true" strokeWidth={1.75} className="h-11 w-11" />
             <span className="absolute bottom-0 right-0 rounded-full border-4 border-surface bg-critical text-surface">
-              <Icon className="h-5 w-5">
-                <path d="M12 6v7m0 4h.01" />
-              </Icon>
+              <AlertCircle aria-hidden="true" strokeWidth={2} className="h-5 w-5" />
             </span>
           </div>
           <h1

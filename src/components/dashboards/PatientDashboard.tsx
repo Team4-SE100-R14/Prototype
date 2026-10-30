@@ -1,8 +1,27 @@
-import { useState, type ReactNode } from "react"
+import { useMemo, useState, type ReactNode } from "react"
 import type { AuthUser } from "../../App"
 import SessionSecurityMenu from "../SessionSecurityMenu"
 import Button from "../ui/Button"
-import Icon from "../ui/Icon"
+import Pagination from "../ui/Pagination"
+import Tooltip from "../ui/Tooltip"
+import {
+  AlertCircle,
+  AlertTriangle,
+  Bed,
+  Download,
+  Eye,
+  EyeOff,
+  FileCheck,
+  FileImage,
+  FileText,
+  FlaskConical,
+  HeartPulse,
+  LogOut,
+  MessageSquareText,
+  ShieldCheck,
+  UserCheck,
+  X,
+} from "lucide-react"
 import Modal from "../ui/Modal"
 
 interface Props {
@@ -61,10 +80,8 @@ const ATTACHMENTS = [
 
 function BrandMark() {
   return (
-    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-primary text-surface shadow-sm">
-      <Icon className="h-6 w-6">
-        <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-      </Icon>
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-deep text-surface shadow-clinical-xs">
+      <HeartPulse aria-hidden="true" strokeWidth={1.75} className="h-6 w-6" />
     </div>
   )
 }
@@ -88,7 +105,7 @@ function Section({
           <h3 className="font-display text-sm font-semibold text-text-primary">
             {title}
           </h3>
-          <div className="mt-2 text-sm leading-relaxed text-text-secondary">
+          <div className="mt-2 text-base leading-[1.6] text-text-secondary">
             {children}
           </div>
         </div>
@@ -109,14 +126,14 @@ function EmptyTab({
   children?: ReactNode
 }) {
   return (
-    <section className="rounded-2xl border border-border-subtle bg-surface p-6 shadow-sm sm:p-8">
+    <section className="rounded-xl border border-border-subtle bg-surface p-6 shadow-clinical-xs sm:p-8">
       <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-surface text-brand-deep">
         {icon}
       </div>
       <h2 className="font-display text-xl font-semibold text-text-primary">
         {title}
       </h2>
-      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-text-muted">
+      <p className="mt-2 max-w-2xl text-base leading-[1.6] text-text-muted">
         {description}
       </p>
       {children}
@@ -161,9 +178,7 @@ function ResultPreview({
           aria-label="Đóng bản xem kết quả"
           className="rounded-lg p-2 text-text-muted hover:bg-subsurface hover:text-text-primary"
         >
-          <Icon className="h-5 w-5">
-            <path d="M6 6l12 12M18 6L6 18" />
-          </Icon>
+          <X aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
         </button>
       </div>
       <div className="p-5 sm:p-6">
@@ -244,6 +259,20 @@ export default function PatientDashboard({ onLogout }: Props) {
   const [preview, setPreview] = useState<typeof ATTACHMENTS[number] | null>(
     null,
   )
+  const [resultsPage, setResultsPage] = useState(1)
+  const [resultsPageSize, setResultsPageSize] = useState(2)
+
+  const PARACLINICAL_RESULTS = useMemo(() => [
+    { code: "CLS-26-01", name: "X-Quang Ngực Thẳng", date: "28/09/2026", status: "Đã có kết quả", type: "Chẩn đoán hình ảnh" },
+    { code: "CLS-26-02", name: "Điện tâm đồ ECG thường quy", date: "28/09/2026", status: "Đã có kết quả", type: "Thăm dò chức năng" },
+    { code: "CLS-26-03", name: "Công thức máu toàn phần", date: "27/09/2026", status: "Đã có kết quả", type: "Xét nghiệm huyết học" },
+    { code: "CLS-26-04", name: "Sinh hóa máu cơ bản", date: "27/09/2026", status: "Đã có kết quả", type: "Xét nghiệm sinh hóa" },
+  ], [])
+
+  const totalResultsPages = Math.max(1, Math.ceil(PARACLINICAL_RESULTS.length / resultsPageSize))
+  const paginatedResults = useMemo(() => {
+    return PARACLINICAL_RESULTS.slice((resultsPage - 1) * resultsPageSize, resultsPage * resultsPageSize)
+  }, [PARACLINICAL_RESULTS, resultsPage, resultsPageSize])
   const [notice, setNotice] = useState("")
   const [piiVisible, setPiiVisible] = useState(() => {
     try {
@@ -324,9 +353,7 @@ export default function PatientDashboard({ onLogout }: Props) {
             aria-label="Đăng xuất"
             className="rounded-lg p-2.5 text-text-muted hover:bg-subsurface hover:text-text-primary"
           >
-            <Icon className="h-5 w-5">
-              <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </Icon>
+            <LogOut aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
           </button>
         </div>
         <div className="flex items-center justify-between border-t border-border-subtle px-4 py-2 sm:hidden">
@@ -342,7 +369,7 @@ export default function PatientDashboard({ onLogout }: Props) {
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
         <section
           aria-labelledby="patient-summary-title"
-          className="overflow-hidden rounded-2xl border border-border-subtle bg-surface shadow-sm"
+          className="overflow-hidden rounded-xl border border-border-subtle bg-surface shadow-clinical-xs"
         >
           <div className="bg-brand-surface/60 px-5 py-5 sm:px-7 sm:py-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -373,21 +400,29 @@ export default function PatientDashboard({ onLogout }: Props) {
                     </strong>
                   </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={togglePii}
-                  aria-pressed={piiVisible}
-                  className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-brand-deep hover:bg-surface"
+                <Tooltip
+                  content={
+                    piiVisible
+                      ? "Che số CCCD và Số điện thoại cá nhân để bảo vệ quyền riêng tư trên màn hình hiển thị"
+                      : "Hiển thị đầy đủ số CCCD và Số điện thoại cá nhân trên thiết bị của bạn"
+                  }
                 >
-                  <Icon className="h-4 w-4">
-                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
-                    <circle cx="12" cy="12" r="3" />
-                    {piiVisible && <path d="M3 3l18 18" />}
-                  </Icon>
-                  {piiVisible
-                    ? "Che thông tin nhạy cảm"
-                    : "Bỏ che thông tin (Hiển thị đầy đủ)"}
-                </button>
+                  <button
+                    type="button"
+                    onClick={togglePii}
+                    aria-pressed={piiVisible}
+                    className="inline-flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-brand-deep hover:bg-surface interactive-tactile"
+                  >
+                    {piiVisible ? (
+                      <EyeOff aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
+                    ) : (
+                      <Eye aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
+                    )}
+                    {piiVisible
+                      ? "Che thông tin nhạy cảm"
+                      : "Bỏ che thông tin (Hiển thị đầy đủ)"}
+                  </button>
+                </Tooltip>
               </div>
             </div>
           </div>
@@ -411,29 +446,34 @@ export default function PatientDashboard({ onLogout }: Props) {
             ))}
           </div>
           <div className="grid gap-3 border-t border-border-subtle p-5 sm:p-6 lg:grid-cols-2">
-            <div className="flex items-start gap-3 rounded-xl border border-critical-border bg-critical-bg p-4 text-critical">
-              <Icon className="mt-0.5 h-5 w-5 shrink-0">
-                <path d="M12 3L2 21h20L12 3zm0 6v5m0 3h.01" />
-              </Icon>
-              <div>
-                <p className="text-xs font-bold">TIỀN SỬ DỊ ỨNG</p>
-                <p className="mt-1 text-sm font-semibold leading-relaxed">
-                  Penicillin (Sốc phản vệ), Aspirin (Phát ban nhẹ)
-                </p>
+            <Tooltip
+              content="Cảnh báo an toàn: Tiền sử dị ứng thuốc cố định theo Hồ sơ sức khỏe. Bác sĩ sẽ bị chặn cứng nếu kê đơn thuốc chứa Penicillin."
+              className="w-full"
+            >
+              <div className="w-full flex items-start gap-3 rounded-xl border border-critical-border bg-critical-bg p-4 text-critical cursor-help interactive-peek">
+                <AlertTriangle aria-hidden="true" strokeWidth={1.75} className="mt-0.5 h-5 w-5 shrink-0" />
+                <div>
+                  <p className="text-xs font-bold">TIỀN SỬ DỊ ỨNG</p>
+                  <p className="mt-1 text-sm font-semibold leading-relaxed">
+                    Penicillin (Sốc phản vệ), Aspirin (Phát ban nhẹ)
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-start gap-3 rounded-xl border border-warning/30 bg-warning-bg p-4 text-warning">
-              <Icon className="mt-0.5 h-5 w-5 shrink-0">
-                <circle cx="12" cy="12" r="9" />
-                <path d="M12 7v5m0 4h.01" />
-              </Icon>
-              <div>
-                <p className="text-xs font-bold">BỆNH LÝ MẠN TÍNH</p>
-                <p className="mt-1 text-sm font-semibold leading-relaxed">
-                  Tăng huyết áp nguyên phát (I10)
-                </p>
+            </Tooltip>
+            <Tooltip
+              content="Phân loại bệnh lý mạn tính theo mã chuẩn quốc tế WHO ICD-10 (I10: Tăng huyết áp vô căn / nguyên phát)."
+              className="w-full"
+            >
+              <div className="w-full flex items-start gap-3 rounded-xl border border-warning/30 bg-warning-bg p-4 text-warning cursor-help interactive-peek">
+                <AlertCircle aria-hidden="true" strokeWidth={1.75} className="mt-0.5 h-5 w-5 shrink-0" />
+                <div>
+                  <p className="text-xs font-bold">BỆNH LÝ MẠN TÍNH</p>
+                  <p className="mt-1 text-sm font-semibold leading-relaxed">
+                    Tăng huyết áp nguyên phát (I10)
+                  </p>
+                </div>
               </div>
-            </div>
+            </Tooltip>
           </div>
         </section>
 
@@ -453,9 +493,9 @@ export default function PatientDashboard({ onLogout }: Props) {
                   setActiveTab(tab.id)
                   setNotice("")
                 }}
-                className={`rounded-lg px-4 py-3 text-sm font-semibold transition-colors ${
+                className={`min-h-12 cursor-pointer rounded-lg px-4 py-3 font-heading text-sm font-semibold transition-colors ${
                   activeTab === tab.id
-                    ? "bg-brand-primary text-surface shadow-sm"
+                    ? "bg-brand-deep text-surface shadow-clinical-xs"
                     : "text-text-muted hover:bg-subsurface hover:text-text-primary"
                 }`}
               >
@@ -477,7 +517,7 @@ export default function PatientDashboard({ onLogout }: Props) {
 
         <div className="mt-5" id={`panel-${activeTab}`} role="tabpanel">
           {activeTab === "outpatient" && (
-            <article className="overflow-hidden rounded-2xl border border-border-subtle bg-surface shadow-sm">
+            <article className="overflow-hidden rounded-xl border border-border-subtle bg-surface shadow-clinical-xs">
               <header className="flex flex-col gap-3 border-b border-border-subtle bg-canvas px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                 <div>
                   <p className="text-xs font-semibold text-brand-deep">
@@ -494,10 +534,7 @@ export default function PatientDashboard({ onLogout }: Props) {
               <Section
                 title="Bác sĩ phụ trách"
                 icon={
-                  <Icon>
-                    <circle cx="12" cy="7" r="4" />
-                    <path d="M5 21v-2a7 7 0 0114 0v2M19 7h3m-1.5-1.5v3" />
-                  </Icon>
+                  <UserCheck aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
                 }
               >
                 <p className="font-semibold text-text-primary">
@@ -507,9 +544,7 @@ export default function PatientDashboard({ onLogout }: Props) {
               <Section
                 title="Chẩn đoán bệnh (ICD-10)"
                 icon={
-                  <Icon>
-                    <path d="M5 4h14v16H5zM8 8h8m-8 4h8m-8 4h5" />
-                  </Icon>
+                  <FileText aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
                 }
               >
                 <p>
@@ -520,9 +555,7 @@ export default function PatientDashboard({ onLogout }: Props) {
               <Section
                 title="Kết luận & Lời dặn của Bác sĩ"
                 icon={
-                  <Icon>
-                    <path d="M4 5h16v12H8l-4 4V5zM8 9h8m-8 4h5" />
-                  </Icon>
+                  <MessageSquareText aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
                 }
               >
                 <p>
@@ -533,9 +566,7 @@ export default function PatientDashboard({ onLogout }: Props) {
               <Section
                 title="Đơn thuốc đã cấp (Đã khóa)"
                 icon={
-                  <Icon>
-                    <path d="M9 4h6v5a3 3 0 01-6 0V4zm0 5L5 20m10-11l4 11M8 15h8" />
-                  </Icon>
+                  <FlaskConical aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
                 }
               >
                 <div className="overflow-x-auto rounded-xl border border-border-subtle">
@@ -577,9 +608,7 @@ export default function PatientDashboard({ onLogout }: Props) {
               <Section
                 title="Kết quả cận lâm sàng đính kèm"
                 icon={
-                  <Icon>
-                    <path d="M7 3h7l5 5v13H7V3zm7 0v5h5M10 13h6m-6 4h4" />
-                  </Icon>
+                  <FileCheck aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
                 }
               >
                 <div className="grid gap-3 lg:grid-cols-2">
@@ -590,9 +619,7 @@ export default function PatientDashboard({ onLogout }: Props) {
                     >
                       <div className="flex items-start gap-3">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-surface text-brand-deep">
-                          <Icon>
-                            <path d="M5 4h14v16H5zM8 15l3-3 2 2 3-4 2 3" />
-                          </Icon>
+                          <FileImage aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
                         </div>
                         <div className="min-w-0">
                           <p className="font-semibold text-text-primary">
@@ -615,9 +642,7 @@ export default function PatientDashboard({ onLogout }: Props) {
                           onClick={() => download(attachment)}
                           className="flex flex-1 items-center justify-center gap-2 border border-border-subtle"
                         >
-                          <Icon className="h-4 w-4">
-                            <path d="M12 3v12m-4-4l4 4 4-4M4 17v4h16v-4" />
-                          </Icon>
+                          <Download aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
                           Tải về
                         </Button>
                       </div>
@@ -633,9 +658,7 @@ export default function PatientDashboard({ onLogout }: Props) {
               title="Hồ sơ điều trị nội trú"
               description="Một đợt điều trị nội trú đã hoàn tất và được đưa vào hồ sơ sức khỏe dọc của bạn."
               icon={
-                <Icon className="h-6 w-6">
-                  <path d="M3 18h18M5 18v-8h6a4 4 0 014 4v4m4 0V8M7 7h4" />
-                </Icon>
+                <Bed aria-hidden="true" strokeWidth={1.75} className="h-6 w-6" />
               }
             >
               <div className="mt-6 rounded-xl border border-border-subtle bg-canvas p-5">
@@ -658,9 +681,7 @@ export default function PatientDashboard({ onLogout }: Props) {
               title="Đơn thuốc đang dùng"
               description="Thông tin dưới đây giúp bạn theo dõi thuốc đang sử dụng. Không tự ý thay đổi liều nếu chưa hỏi bác sĩ."
               icon={
-                <Icon className="h-6 w-6">
-                  <path d="M9 4h6v5a3 3 0 01-6 0V4zm0 5L5 20m10-11l4 11M8 15h8" />
-                </Icon>
+                <FlaskConical aria-hidden="true" strokeWidth={1.75} className="h-6 w-6" />
               }
             >
               <div className="mt-6 flex flex-col gap-4 rounded-xl border border-border-subtle bg-canvas p-5 sm:flex-row sm:items-center sm:justify-between">
@@ -684,45 +705,65 @@ export default function PatientDashboard({ onLogout }: Props) {
               title="Kết quả Cận lâm sàng & Hình ảnh"
               description="Bốn kết quả đã được bác sĩ xác nhận và công bố trên cổng thông tin của bạn."
               icon={
-                <Icon className="h-6 w-6">
-                  <path d="M5 4h14v16H5zM8 15l3-3 2 2 3-4 2 3" />
-                </Icon>
+                <FileImage aria-hidden="true" strokeWidth={1.75} className="h-6 w-6" />
               }
             >
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                {[
-                  "X-Quang Ngực Thẳng",
-                  "Điện tâm đồ ECG thường quy",
-                  "Công thức máu toàn phần",
-                  "Sinh hóa máu cơ bản",
-                ].map((result, index) => (
-                  <div
-                    key={result}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-border-subtle bg-canvas p-4"
-                  >
-                    <div>
-                      <p className="text-sm font-semibold text-text-primary">
-                        {result}
-                      </p>
-                      <p className="mt-1 text-xs text-text-muted">
-                        {index < 2 ? "28/09/2026" : "27/09/2026"}
-                      </p>
-                    </div>
-                    <span className="rounded-full bg-normal-bg px-2 py-1 text-xs font-semibold text-normal">
-                      Đã có kết quả
-                    </span>
-                  </div>
-                ))}
+              <div className="mt-6 overflow-hidden rounded-xl border border-border-subtle bg-surface shadow-clinical-xs">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="border-b border-border-strong bg-subsurface text-xs uppercase tracking-wide text-text-secondary">
+                      <tr>
+                        {["Mã CLS", "Tên xét nghiệm / CLS", "Phân loại", "Ngày thực hiện", "Trạng thái", "Thao tác"].map(h => (
+                          <th key={h} className="px-4 py-3 font-semibold">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border-subtle">
+                      {paginatedResults.map((result: { code: string; name: string; date: string; status: string; type: string }) => (
+                        <tr key={result.code} className="transition-colors hover:bg-canvas">
+                          <td className="px-4 py-3 font-mono text-xs font-semibold text-brand-deep">{result.code}</td>
+                          <td className="px-4 py-3 font-semibold text-text-primary">{result.name}</td>
+                          <td className="px-4 py-3 text-xs text-text-muted">{result.type}</td>
+                          <td className="px-4 py-3 font-mono text-xs text-text-secondary">{result.date}</td>
+                          <td className="px-4 py-3">
+                            <span className="inline-flex rounded-full bg-normal-bg px-2.5 py-0.5 text-xs font-semibold text-normal">
+                              {result.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <Button
+                              variant="ghost"
+                              className="border border-border-subtle !px-2.5 !py-1 text-xs text-brand-deep hover:bg-brand-surface"
+                              onClick={() => {
+                                const matched = ATTACHMENTS.find(a => a.title.toLowerCase().includes(result.name.slice(0, 4).toLowerCase())) || ATTACHMENTS[0]
+                                setPreview(matched)
+                              }}
+                            >
+                              Xem chi tiết
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <Pagination
+                  currentPage={resultsPage}
+                  totalPages={totalResultsPages}
+                  totalItems={PARACLINICAL_RESULTS.length}
+                  pageSize={resultsPageSize}
+                  onPageChange={setResultsPage}
+                  onPageSizeChange={setResultsPageSize}
+                  pageSizeOptions={[2, 4, 8]}
+                  itemLabel="kết quả"
+                />
               </div>
             </EmptyTab>
           )}
         </div>
 
-        <footer className="mt-6 flex items-start gap-3 rounded-2xl border border-info/20 bg-info-bg p-5 text-info">
-          <Icon className="mt-0.5 h-5 w-5 shrink-0">
-            <path d="M12 3l7 3v5c0 4.7-2.8 8-7 10-4.2-2-7-5.3-7-10V6l7-3z" />
-            <path d="M9.5 12l1.5 1.5 3.5-4" />
-          </Icon>
+        <footer className="mt-6 flex items-start gap-3 rounded-xl border border-info/20 bg-info-bg p-5 text-info">
+          <ShieldCheck aria-hidden="true" strokeWidth={1.75} className="mt-0.5 h-5 w-5 shrink-0" />
           <p className="text-sm leading-relaxed">
             Hồ sơ bệnh án điện tử tuân thủ Thông tư 46/2018/TT-BYT. Mọi thông
             tin chưa hoàn tất hoặc ghi chú nội bộ tạm thời không hiển thị trên

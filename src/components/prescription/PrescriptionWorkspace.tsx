@@ -3,7 +3,8 @@ import type { AuthUser } from "../../App"
 import { getClinicalPatient } from "../../lib/clinicalWorkflow"
 import DoctorEncounterHeader from "../doctor/DoctorEncounterHeader"
 import Button from "../ui/Button"
-import Icon from "../ui/Icon"
+import Tooltip from "../ui/Tooltip"
+import { AlertTriangle, Info, Lock, Shield, ShieldCheck, Zap } from "lucide-react"
 import Modal from "../ui/Modal"
 import { TextArea, TextInput } from "../ui/TextInput"
 
@@ -113,14 +114,24 @@ function FieldLabel({ children, required = false }: { children: React.ReactNode;
 }
 
 function StatusBadge({ status }: { status: Status }) {
-  if (status === "locked") return <span className="inline-flex items-center gap-1 rounded-full bg-normal-bg px-2.5 py-1 text-xs font-semibold text-normal"><Icon className="h-3.5 w-3.5"><rect x="5" y="10" width="14" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></Icon>Đã khóa</span>
+  if (status === "locked") return (
+    <Tooltip content="Đơn thuốc đã khóa. Để chỉnh sửa, vui lòng tạo đơn thuốc thay thế.">
+      <span className="inline-flex items-center gap-1 rounded-full bg-normal-bg px-2.5 py-1 text-xs font-semibold text-normal cursor-help">
+        <Lock aria-hidden="true" strokeWidth={2} className="h-3.5 w-3.5" />Đã khóa
+      </span>
+    </Tooltip>
+  )
   if (status === "cancelled") return <span className="rounded-full bg-subsurface px-2.5 py-1 text-xs font-semibold text-text-muted line-through">Đã hủy</span>
-  return <span className="rounded-full bg-info-bg px-2.5 py-1 text-xs font-semibold text-info">Đang soạn</span>
+  return (
+    <Tooltip content="Đơn nháp đang soạn thảo, chưa khóa. Dữ liệu chỉ lưu tạm thời trên máy trạm.">
+      <span className="rounded-full bg-info-bg px-2.5 py-1 text-xs font-semibold text-info cursor-help">Đang soạn</span>
+    </Tooltip>
+  )
 }
 
 function ModalHeader({ title, tone = "default" }: { title: string; tone?: "default" | "danger" }) {
   return <div className={`flex items-center gap-3 border-b px-6 py-5 ${tone === "danger" ? "border-critical-border bg-critical-bg text-critical" : "border-border-subtle text-text-primary"}`}>
-    <Icon className="h-6 w-6"><path d="M12 3 2.7 20h18.6L12 3Z" /><path d="M12 9v4M12 17h.01" /></Icon>
+    <AlertTriangle aria-hidden="true" strokeWidth={1.75} className="h-6 w-6" />
     <div className="font-display text-lg font-semibold">{title}</div>
   </div>
 }
@@ -435,19 +446,38 @@ export default function PrescriptionWorkspace({
   const renderSafetyPanel = () => (
     <aside className="self-start rounded-xl border border-border-subtle bg-surface shadow-sm xl:sticky xl:top-20">
       <div className="flex items-center gap-3 border-b border-border-subtle p-5">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-surface text-brand-deep"><Icon><path d="M12 3l7 3v5c0 4.7-2.8 8-7 10-4.2-2-7-5.3-7-10V6l7-3z" /><path d="M9.5 12l1.5 1.5 3.5-4" /></Icon></div>
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-surface text-brand-deep"><ShieldCheck aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" /></div>
         <div><div className="font-display font-semibold text-text-primary">Kiểm tra an toàn dùng thuốc</div><div className="text-xs text-text-muted">Dị ứng và tương tác thuốc</div></div>
       </div>
       <div className="space-y-4 p-5">
-        {safety === "unchecked" && <div className="py-10 text-center text-sm text-text-muted"><Icon className="mx-auto mb-3 h-10 w-10 text-border-strong"><path d="M12 3l7 3v5c0 4.7-2.8 8-7 10-4.2-2-7-5.3-7-10V6l7-3z" /></Icon><div className="font-semibold text-text-secondary">Chưa kiểm tra</div><div className="mt-1">Kết quả sẽ xuất hiện trước khi khóa đơn.</div></div>}
+        {safety === "unchecked" && <div className="py-10 text-center text-sm text-text-muted"><Shield aria-hidden="true" strokeWidth={1.75} className="mx-auto mb-3 h-10 w-10 text-border-strong" /><div className="font-semibold text-text-secondary">Chưa kiểm tra</div><div className="mt-1">Kết quả sẽ xuất hiện trước khi khóa đơn.</div></div>}
         {safety === "checking" && <div className="space-y-3 py-8"><div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-border-subtle border-t-brand-primary" /><div className="text-center text-sm font-semibold text-text-secondary">Đang kiểm tra...</div><div className="h-12 animate-pulse rounded-lg bg-subsurface" /><div className="h-20 animate-pulse rounded-lg bg-subsurface" /></div>}
         {safety === "error" && <div className="rounded-lg border border-critical-border bg-critical-bg p-4 text-sm text-critical"><div className="font-semibold">Không thể truy xuất tiền sử dị ứng của bệnh nhân. Dừng kê đơn để bảo đảm an toàn.</div><Button variant="danger" className="mt-3" onClick={runSafety}>Thử lại</Button></div>}
         {safety === "result" && <>
           <div><div className="mb-2 text-sm font-semibold text-text-primary">Đối chiếu dị ứng</div>{allergyLine ? <div className="rounded-lg border border-critical-border bg-critical-bg p-3 text-sm font-semibold text-critical">Phát hiện trùng hoạt chất: {allergyLine.ingredient}</div> : <div className="rounded-lg bg-normal-bg p-3 text-sm text-normal">Không phát hiện trùng tiền sử dị ứng.</div>}</div>
           <div>
-            <div className="mb-2 flex items-center justify-between"><div className="text-sm font-semibold text-text-primary">Tương tác thuốc</div>{interactionSource === "external" && interactionFromCache && <span className="inline-flex items-center gap-1 text-xs text-warning"><Icon className="h-3.5 w-3.5"><path d="m13 2-8 11h7l-1 9 8-12h-7l1-8Z" /></Icon>Từ bộ nhớ đệm</span>}</div>
-            {interactionSource === "internal" && <div className="mb-3 rounded-lg border border-warning/30 bg-warning-bg p-3 text-xs text-warning">Dịch vụ kiểm tra tương tác bên ngoài không khả dụng. Đã đối chiếu với danh mục an toàn nội bộ.</div>}
-            {interactionSkipped ? <div className="flex items-center gap-2 rounded-lg bg-subsurface p-3 text-sm text-text-muted"><Icon className="h-4 w-4 shrink-0"><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></Icon><span>Đơn chỉ có 1 hoạt chất, không cần kiểm tra tương tác.</span></div> : !interactions.length ? <div className="rounded-lg bg-normal-bg p-3 text-sm text-normal">Không phát hiện tương tác thuốc.</div> : <div className="space-y-2">{interactions.map(item => <div key={item.pair} className="rounded-lg border border-border-subtle p-3"><span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${item.severity === "critical" ? "bg-critical-bg text-critical" : item.severity === "moderate" ? "bg-warning-bg text-warning" : "bg-info-bg text-info"}`}>{item.severity === "critical" ? "Nghiêm trọng" : item.severity === "moderate" ? "Trung bình" : "Nhẹ"}</span><div className="mt-2 text-sm font-semibold text-text-primary">{item.pair}</div><div className="mt-1 text-xs leading-relaxed text-text-muted">{item.text}</div><div className="mt-1 text-xs text-text-secondary">Dòng thuốc: {item.affected.join(", ")}</div></div>)}</div>}
+            <div className="mb-2 flex items-center justify-between"><div className="text-sm font-semibold text-text-primary">Tương tác thuốc</div>{interactionSource === "external" && interactionFromCache && (
+  <Tooltip position="left" content="Dữ liệu tra cứu tương tác thuốc được tái sử dụng từ bộ nhớ đệm (Cache) do có kết quả hợp lệ trong vòng 60 phút">
+    <span className="inline-flex items-center gap-1 text-xs text-warning cursor-help"><Zap aria-hidden="true" strokeWidth={2} className="h-3.5 w-3.5" />Từ bộ nhớ đệm</span>
+  </Tooltip>
+)}</div>
+            {interactionSource === "internal" && (
+  <Tooltip position="bottom" content="Đang đối chiếu dữ liệu tương tác từ danh mục nội bộ.">
+    <div className="mb-3 rounded-lg border border-warning/30 bg-warning-bg p-3 text-xs text-warning cursor-help">Dịch vụ kiểm tra tương tác bên ngoài không khả dụng. Đã đối chiếu với danh mục an toàn nội bộ.</div>
+  </Tooltip>
+)}
+            {interactionSkipped ? <div className="flex items-center gap-2 rounded-lg bg-subsurface p-3 text-sm text-text-muted"><Info aria-hidden="true" strokeWidth={1.75} className="h-4 w-4 shrink-0" /><span>Đơn chỉ có 1 hoạt chất, không cần kiểm tra tương tác.</span></div> : !interactions.length ? <div className="rounded-lg bg-normal-bg p-3 text-sm text-normal">Không phát hiện tương tác thuốc.</div> : <div className="space-y-2">{interactions.map(item => <div key={item.pair} className={`rounded-lg border p-3 ${item.severity === "critical" ? "border-cpoe-block-border/50 bg-cpoe-block-bg/40" : item.severity === "moderate" ? "border-cpoe-moderate-border/40 bg-cpoe-moderate-bg/40" : "border-cpoe-minor-border/40 bg-cpoe-minor-bg/40"}`}><Tooltip
+  position="left"
+  content={
+    item.severity === "critical"
+      ? "Chống chỉ định: Bắt buộc đổi hoặc bỏ thuốc này."
+      : item.severity === "moderate"
+      ? "Cảnh báo tương tác: Cần nhập lý do khi chỉ định."
+      : "Lưu ý theo dõi khi kết hợp hai thuốc này."
+  }
+>
+  <span className={`cursor-help rounded-full border px-2 py-0.5 text-xs font-semibold ${item.severity === "critical" ? "border-cpoe-block-border bg-cpoe-block-bg text-cpoe-block" : item.severity === "moderate" ? "border-cpoe-moderate-border bg-cpoe-moderate-bg text-cpoe-moderate" : "border-cpoe-minor-border bg-cpoe-minor-bg text-cpoe-minor"}`}>{item.severity === "critical" ? "Nghiêm trọng" : item.severity === "moderate" ? "Trung bình" : "Nhẹ"}</span>
+</Tooltip><div className="mt-2 text-sm font-semibold text-text-primary">{item.pair}</div><div className="mt-1 text-xs leading-relaxed text-text-muted">{item.text}</div><div className="mt-1 text-xs text-text-secondary">Dòng thuốc: {item.affected.join(", ")}</div></div>)}</div>}
             {interactionSource && <div className="mt-2 text-xs text-text-muted">Nguồn: {interactionSource === "internal" ? "Bảng tương tác nội bộ" : "rxcheck.dev (dịch vụ ngoài)"}</div>}
           </div>
           {status === "locked" && <div className="rounded-lg border border-normal/20 bg-normal-bg p-4"><div className="font-semibold text-normal">Bản chụp kết quả an toàn (snapshot)</div><div className="mt-2 space-y-1 text-xs text-text-secondary"><div>Thời gian: 11/10/2026 09:32</div><div>Bác sĩ: BS. Trần Minh Khoa</div><div>Dị ứng: {allergyLine ? `Trùng ${allergyLine.ingredient}` : "Không phát hiện"}</div><div>Tương tác: {interactions.length ? interactions.map(i => i.pair).join("; ") : "Không phát hiện"}</div>{clinicalReason && <div>Lý do lâm sàng: {clinicalReason}</div>}</div></div>}
@@ -487,20 +517,20 @@ export default function PrescriptionWorkspace({
 
               <section className="overflow-hidden rounded-xl border border-border-subtle bg-surface shadow-sm">
                 <div className="flex items-center justify-between border-b border-border-subtle p-5"><div><div className="font-display text-lg font-semibold text-text-primary">Danh sách thuốc</div><div className="text-xs text-text-muted">{lines.length} dòng thuốc trong đơn</div></div>{!lockedView && <Button onClick={() => setDrawer(true)}>+ Thêm thuốc</Button>}</div>
-                {!lines.length ? <div className="p-10 text-center text-sm text-text-muted">Chưa có thuốc nào. Hãy tìm và thêm thuốc vào đơn.</div> : <div className="overflow-x-auto"><table className="w-full min-w-4xl text-left text-sm"><thead className="bg-canvas text-xs text-text-muted"><tr>{["STT","Tên thuốc / Hoạt chất","Số lượng","Liều lượng","Đường dùng","Cách dùng","Thời gian dùng",...(lockedView ? [] : ["Thao tác"])].map(h => <th key={h} className="px-4 py-3 font-semibold">{h}</th>)}</tr></thead><tbody>{lines.map((line, index) => <tr key={`${line.code}-${index}`} className={`border-t border-border-subtle ${flagged.includes(line.name) ? "border-l-4 border-l-critical bg-critical-bg/30" : ""}`}><td className="px-4 py-4">{index + 1}</td><td className="px-4 py-4"><div className="font-semibold text-text-primary">{line.name}</div><div className="text-xs text-text-muted">{line.ingredient} · {line.strength}</div>{flagged.includes(line.name) && <span className="mt-1 inline-flex rounded-full bg-critical-bg px-2 py-0.5 text-xs font-semibold text-critical">{allergyIngredients.includes(line.ingredient.toLowerCase()) ? "Dị ứng" : "Tương tác nghiêm trọng"}</span>}</td><td className="px-4 py-4 font-mono">{line.quantity}</td><td className="px-4 py-4">{line.dose}</td><td className="px-4 py-4">{line.route}</td><td className="max-w-52 px-4 py-4">{line.directions}</td><td className="px-4 py-4">{line.duration || "—"}</td>{!lockedView && <td className="px-4 py-4"><div className="flex gap-1"><Button variant="ghost" className="px-2" onClick={() => editLine(index)}>Sửa</Button><Button variant="danger" className="px-2" onClick={() => { setDeleteIndex(index); setModal("delete") }}>Xóa</Button></div></td>}</tr>)}</tbody></table></div>}
+                {!lines.length ? <div className="p-10 text-center text-sm text-text-muted">Chưa có thuốc nào. Hãy tìm và thêm thuốc vào đơn.</div> : <div className="overflow-x-auto"><table className="w-full min-w-4xl text-left text-sm"><thead className="border-b border-border-strong bg-subsurface text-xs text-text-secondary"><tr>{["STT","Tên thuốc / Hoạt chất","Số lượng","Liều lượng","Đường dùng","Cách dùng","Thời gian dùng",...(lockedView ? [] : ["Thao tác"])].map(h => <th key={h} className="px-4 py-3 font-semibold">{h}</th>)}</tr></thead><tbody>{lines.map((line, index) => <tr key={`${line.code}-${index}`} className={`border-t border-border-subtle ${flagged.includes(line.name) ? "border-l-4 border-l-critical bg-critical-bg/30" : ""}`}><td className="px-4 py-4">{index + 1}</td><td className="px-4 py-4"><div className="font-semibold text-text-primary">{line.name}</div><div className="text-xs text-text-muted">{line.ingredient} · {line.strength}</div>{flagged.includes(line.name) && <span className="mt-1 inline-flex rounded-full bg-critical-bg px-2 py-0.5 text-xs font-semibold text-critical">{allergyIngredients.includes(line.ingredient.toLowerCase()) ? "Dị ứng" : "Tương tác nghiêm trọng"}</span>}</td><td className="px-4 py-4 font-mono">{line.quantity}</td><td className="px-4 py-4">{line.dose}</td><td className="px-4 py-4">{line.route}</td><td className="max-w-52 px-4 py-4">{line.directions}</td><td className="px-4 py-4">{line.duration || "—"}</td>{!lockedView && <td className="px-4 py-4"><div className="flex gap-1"><Button variant="ghost" className="px-2" onClick={() => editLine(index)}>Sửa</Button><Button variant="danger" className="px-2" onClick={() => { setDeleteIndex(index); setModal("delete") }}>Xóa</Button></div></td>}</tr>)}</tbody></table></div>}
               </section>
 
               <section className="rounded-xl border border-border-subtle bg-surface p-5 shadow-sm"><div className="mb-3 flex items-center justify-between"><div className="font-display text-lg font-semibold text-text-primary">Lời dặn của bác sĩ</div><span className="text-xs text-text-muted">{instructions.length}/500</span></div><TextArea rows={4} disabled={lockedView} maxLength={500} value={instructions} onChange={e => { setInstructions(e.target.value); setSaved(false) }} placeholder="Nhập lời dặn cho bệnh nhân (không bắt buộc)" /></section>
               {inlineAlert && <div className="rounded-lg border border-critical-border bg-critical-bg p-4 text-sm font-semibold text-critical">{inlineAlert}{inlineAlert.includes("thất bại") && <Button variant="danger" className="ml-3" onClick={runSafety}>Thử lại</Button>}</div>}
               {!lockedView ? null :
-              <div className={`rounded-xl p-4 text-sm font-semibold ${status === "locked" ? "bg-normal-bg text-normal" : "bg-subsurface text-text-muted"}`}>{status === "locked" ? "Đơn thuốc đã khóa - chỉ đọc" : "Đơn thuốc đã hủy - chỉ đọc"}{status === "cancelled" && <Button className="ml-3" onClick={() => switchScenario("empty")}>Tạo đơn mới</Button>}</div>}
+              <div className={`rounded-xl border border-border-strong border-l-4 p-4 text-sm font-semibold ${status === "locked" ? "border-l-text-secondary bg-subsurface text-text-primary" : "border-l-border-strong bg-subsurface text-text-muted"}`}>{status === "locked" ? "Đơn thuốc đã khóa - chỉ đọc" : "Đơn thuốc đã hủy - chỉ đọc"}{status === "cancelled" && <Button className="ml-3" onClick={() => switchScenario("empty")}>Tạo đơn mới</Button>}</div>}
               {replacementFor && <div className="rounded-xl border border-border-subtle bg-surface p-4"><div className="text-sm font-semibold text-text-primary">Lịch sử thay thế</div><div className="mt-2 font-mono text-sm text-text-secondary">{replacementFor} → {status === "locked" ? code : "Đơn nháp thay thế"}</div></div>}
             </div>
             {renderSafetyPanel()}
           </div>}
       </main>
 
-    {!lockedView && <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-border-subtle bg-surface/95 px-4 py-3 shadow-lg backdrop-blur sm:px-6 ${embedded ? "lg:left-60" : ""}`}><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3"><div className="flex items-center gap-2 text-xs font-medium text-text-muted"><Icon className="h-4 w-4"><rect x="5" y="10" width="14" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></Icon>{safety === "result" && !flagged.length ? "Kiểm tra an toàn đã hoàn tất. Đơn sẵn sàng để khóa." : "Cần kiểm tra an toàn trước khi khóa đơn."}</div><div className="flex flex-wrap items-center gap-2"><Button variant="ghost" onClick={() => setModal("cancel")}>Hủy</Button><Button variant="ghost" className="border border-border-subtle" onClick={() => saveDraft()}>Lưu nháp</Button><Button variant="ghost" className="border border-brand-primary bg-brand-surface text-brand-deep" onClick={runSafety} disabled={safety === "checking" || safety === "error"}>Kiểm tra an toàn</Button><Button onClick={() => setModal("lock")} disabled={safety !== "result" || flagged.length > 0} title={safety !== "result" ? "Hãy kiểm tra an toàn trước khi khóa đơn" : flagged.length ? "Cần xử lý cảnh báo nghiêm trọng trước khi khóa đơn" : undefined}>Khóa đơn</Button></div></div></div>}
+    {!lockedView && <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-border-subtle bg-surface/95 px-4 py-3 shadow-lg backdrop-blur sm:px-6 ${embedded ? "lg:left-60" : ""}`}><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3"><div className="flex items-center gap-2 text-xs font-medium text-text-muted"><Lock aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />{safety === "result" && !flagged.length ? "Kiểm tra an toàn đã hoàn tất. Đơn sẵn sàng để khóa." : "Cần kiểm tra an toàn trước khi khóa đơn."}</div><div className="flex flex-wrap items-center gap-2"><Button variant="ghost" onClick={() => setModal("cancel")}>Hủy</Button><Button variant="ghost" className="border border-border-subtle" onClick={() => saveDraft()}>Lưu nháp</Button><Button variant="ghost" className="border border-brand-primary bg-brand-surface text-brand-deep" onClick={runSafety} disabled={safety === "checking" || safety === "error"}>Kiểm tra an toàn</Button><Button variant="success" onClick={() => setModal("lock")} disabled={safety !== "result" || flagged.length > 0} title={safety !== "result" ? "Hãy kiểm tra an toàn trước khi khóa đơn" : flagged.length ? "Cần xử lý cảnh báo nghiêm trọng trước khi khóa đơn" : undefined}>Khóa đơn</Button></div></div></div>}
 
     {drawer && !lockedView && <div className="fixed inset-0 z-40 bg-text-primary/30" onMouseDown={e => { if (e.target === e.currentTarget) resetForm() }}><div className="ml-auto h-full w-full max-w-xl overflow-y-auto bg-surface p-6 shadow-2xl"><div className="flex items-center justify-between"><div className="font-display text-xl font-semibold text-text-primary">{editing === null ? "Thêm thuốc vào đơn" : "Sửa dòng thuốc"}</div><Button variant="ghost" onClick={resetForm}>Đóng</Button></div>
       {editing === null && <div className="mt-6"><FieldLabel required>Tìm thuốc (tên thương mại hoặc hoạt chất)</FieldLabel><TextInput value={query} onChange={e => { setQuery(e.target.value); setSelected(null); setInactiveError("") }} placeholder="Ví dụ: Panadol hoặc Paracetamol" /><div className="mt-2 text-xs text-text-muted">{query.length < 2 ? "Nhập tối thiểu 2 ký tự" : searching ? "Đang tìm kiếm..." : `${filtered.length} kết quả phù hợp`}</div>{inactiveError && <div className="mt-2 text-sm text-critical">{inactiveError}</div>}

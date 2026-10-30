@@ -2,18 +2,21 @@ import type { ButtonHTMLAttributes } from "react"
 
 const variants = {
   primary:
-    "bg-brand-primary text-surface shadow-sm hover:bg-brand-deep disabled:bg-subsurface disabled:text-text-muted",
-  ghost: "text-text-secondary hover:bg-subsurface",
+    "bg-brand-deep text-surface shadow-clinical-xs hover:bg-brand-dark disabled:bg-subsurface disabled:text-text-disabled",
+  cta:
+    "bg-cta text-surface shadow-clinical-xs hover:bg-cta-hover disabled:bg-subsurface disabled:text-text-disabled",
+  ghost:
+    "text-text-secondary hover:bg-subsurface disabled:opacity-48",
   secondary:
-    "border border-border-subtle bg-surface text-text-secondary hover:border-brand-primary hover:text-brand-deep disabled:opacity-45",
+    "border border-border-strong bg-surface text-text-secondary shadow-clinical-xs hover:border-brand-primary hover:bg-canvas hover:text-brand-deep disabled:opacity-48",
   report:
-    "bg-normal text-surface shadow-sm hover:bg-normal/90 disabled:bg-subsurface disabled:text-text-muted",
+    "bg-cta text-surface shadow-clinical-xs hover:bg-cta-hover disabled:bg-subsurface disabled:text-text-disabled",
   danger:
-    "border border-critical-border bg-surface text-critical hover:bg-critical-bg",
+    "border border-cpoe-block-border/40 bg-surface text-cpoe-block hover:bg-cpoe-block-bg disabled:opacity-48",
   destructive:
-    "bg-critical text-surface shadow-sm hover:bg-critical/90 disabled:bg-subsurface disabled:text-text-muted",
+    "bg-critical text-surface shadow-clinical-xs hover:bg-sptt-red disabled:bg-subsurface disabled:text-text-disabled",
   success:
-    "bg-normal text-surface shadow-sm hover:bg-normal/90 disabled:bg-subsurface disabled:text-text-muted",
+    "bg-cta text-surface shadow-clinical-xs hover:bg-cta-hover disabled:bg-subsurface disabled:text-text-disabled",
 }
 
 export default function Button({
@@ -27,7 +30,7 @@ export default function Button({
   return (
     <button
       type={type}
-      className={`rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed ${variants[variant]} ${className}`}
+      className={`cursor-pointer rounded-lg px-4 py-2.5 font-heading text-sm font-semibold transition-all duration-150 ease-out active:scale-[0.98] select-none hover:shadow-clinical-sm disabled:cursor-not-allowed disabled:active:scale-100 ${variants[variant]} ${className}`}
       {...props}
     />
   )

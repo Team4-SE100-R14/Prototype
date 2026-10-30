@@ -11,7 +11,8 @@ import {
 } from "../../lib/clinicalWorkflow"
 import TopNav from "../TopNav"
 import Button from "../ui/Button"
-import Icon from "../ui/Icon"
+import Pagination from "../ui/Pagination"
+import { Check, FileText, FlaskConical, Upload } from "lucide-react"
 import { TextArea, TextInput } from "../ui/TextInput"
 
 interface Props {
@@ -66,6 +67,9 @@ export default function ParaclinicalTechDashboard({
   )
   const [notice, setNotice] = useState("")
 
+  const [tablePage, setTablePage] = useState(1)
+  const [tablePageSize, setTablePageSize] = useState(5)
+
   const orders = useMemo(
     () => {
       const category = room.includes("Chẩn đoán")
@@ -79,6 +83,16 @@ export default function ParaclinicalTechDashboard({
     },
     [allOrders, room, status],
   )
+
+  useEffect(() => {
+    setTablePage(1)
+  }, [room, status])
+
+  const totalPages = Math.max(1, Math.ceil(orders.length / tablePageSize))
+  const paginatedOrders = useMemo(() => {
+    const start = (tablePage - 1) * tablePageSize
+    return orders.slice(start, start + tablePageSize)
+  }, [orders, tablePage, tablePageSize])
   const selectedOrder =
     allOrders.find((order) => order.id === selectedOrderId) || allOrders[0]
   const selectedService =
@@ -238,7 +252,7 @@ export default function ParaclinicalTechDashboard({
                 <div className="overflow-hidden rounded-xl border border-border-subtle">
                   <div className="overflow-x-auto">
                     <table className="w-full min-w-3xl text-left text-sm">
-                      <thead className="bg-subsurface text-xs uppercase tracking-wide text-text-muted">
+                      <thead className="border-b border-border-strong bg-subsurface text-xs uppercase tracking-wide text-text-secondary">
                         <tr>
                           {[
                             "Chỉ số",
@@ -324,10 +338,7 @@ export default function ParaclinicalTechDashboard({
                   }}
                 />
                 <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-surface text-brand-deep">
-                  <Icon className="h-6 w-6">
-                    <path d="M12 16V4M7 9l5-5 5 5" />
-                    <path d="M5 20h14" />
-                  </Icon>
+                  <Upload aria-hidden="true" strokeWidth={1.75} className="h-6 w-6" />
                 </span>
                 <span className="mt-3 text-sm font-semibold text-text-primary">
                   Tải lên tệp PDF/Ảnh kết quả
@@ -340,10 +351,7 @@ export default function ParaclinicalTechDashboard({
               <div className="flex items-center justify-between gap-3 rounded-lg border border-border-subtle bg-surface p-3">
                 <div className="flex min-w-0 items-center gap-3">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-critical-bg text-critical">
-                    <Icon className="h-5 w-5">
-                      <path d="M6 2h8l4 4v16H6z" />
-                      <path d="M14 2v5h5" />
-                    </Icon>
+                    <FileText aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
                   </span>
                   <div className="min-w-0">
                     <div className="truncate text-sm font-semibold text-text-primary">
@@ -411,9 +419,7 @@ export default function ParaclinicalTechDashboard({
                 }
               }}
             >
-              <Icon className="mr-2 inline h-4 w-4">
-                <path d="M5 12.5 9.5 17 19 7" />
-              </Icon>
+              <Check aria-hidden="true" strokeWidth={1.75} className="mr-2 inline h-4 w-4" />
               {serviceCompleted
                 ? "Dịch vụ đã hoàn tất"
                 : "Lưu & Hoàn tất dịch vụ"}
@@ -448,10 +454,7 @@ export default function ParaclinicalTechDashboard({
           </div>
           <div className="flex items-center gap-3 rounded-xl border border-border-subtle bg-surface px-4 py-3 shadow-sm">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-surface text-brand-deep">
-              <Icon className="h-5 w-5">
-                <path d="M9 3h6M10 3v5l-5 9a3 3 0 0 0 2.6 4.5h8.8A3 3 0 0 0 19 17l-5-9V3" />
-                <path d="M7 15h10" />
-              </Icon>
+              <FlaskConical aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
             </span>
             <div>
               <div className="text-xs font-medium text-text-muted">
@@ -473,7 +476,7 @@ export default function ParaclinicalTechDashboard({
               <select
                 value={room}
                 onChange={(event) => setRoom(event.target.value)}
-                className="w-full rounded-lg border border-border-subtle bg-surface px-3 py-2.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                className="w-full rounded-lg border border-border-strong bg-surface px-3.5 py-2.5 text-sm text-text-primary focus:border-brand-primary focus:outline-none focus:ring-3 focus:ring-brand-primary/20"
               >
                 <option>Phòng Xét Nghiệm Máu 01</option>
                 <option>Phòng Xét Nghiệm Máu 02</option>
@@ -491,7 +494,7 @@ export default function ParaclinicalTechDashboard({
                     event.target.value as "all" | ClinicalOrderStatus,
                   )
                 }
-                className="w-full rounded-lg border border-border-subtle bg-surface px-3 py-2.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                className="w-full rounded-lg border border-border-strong bg-surface px-3.5 py-2.5 text-sm text-text-primary focus:border-brand-primary focus:outline-none focus:ring-3 focus:ring-brand-primary/20"
               >
                 <option value="pending">Chờ thực hiện</option>
                 <option value="processing">Đang thực hiện</option>
@@ -503,7 +506,7 @@ export default function ParaclinicalTechDashboard({
 
           <div className="overflow-x-auto">
             <table className="w-full min-w-5xl text-left text-sm">
-              <thead className="bg-subsurface text-xs uppercase tracking-wide text-text-muted">
+              <thead className="border-b border-border-strong bg-subsurface text-xs uppercase tracking-wide text-text-secondary">
                 <tr>
                   {[
                     "Mã phiếu CLS",
@@ -520,7 +523,7 @@ export default function ParaclinicalTechDashboard({
                 </tr>
               </thead>
               <tbody>
-                {orders.map((order) => (
+                {paginatedOrders.map((order) => (
                   <tr
                     key={order.id}
                     className="border-t border-border-subtle transition-colors hover:bg-canvas"
@@ -560,6 +563,16 @@ export default function ParaclinicalTechDashboard({
               </tbody>
             </table>
           </div>
+          <Pagination
+            currentPage={tablePage}
+            totalPages={totalPages}
+            totalItems={orders.length}
+            pageSize={tablePageSize}
+            onPageChange={setTablePage}
+            onPageSizeChange={setTablePageSize}
+            pageSizeOptions={[5, 10, 20]}
+            itemLabel="phiếu CLS"
+          />
         </section>
       </main>
     </div>

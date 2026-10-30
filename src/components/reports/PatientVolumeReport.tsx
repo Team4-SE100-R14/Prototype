@@ -1,9 +1,10 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import type { AuthUser } from "../../App"
 import { exportReportCsv } from "../../lib/reportExport"
 import Button from "../ui/Button"
 import FieldLabel from "../ui/FieldLabel"
 import NamedIcon from "../ui/NamedIcon"
+import Pagination from "../ui/Pagination"
 import {
   EmptyReport,
   OutcomeChart,
@@ -37,6 +38,13 @@ export default function PatientVolumeReport({
   const [from, setFrom] = useState("2026-01")
   const [to, setTo] = useState("2026-10")
   const [state, setState] = useState<ReportState>("data")
+  const [agePage, setAgePage] = useState(1)
+  const [agePageSize, setAgePageSize] = useState(5)
+
+  const totalAgePages = Math.max(1, Math.ceil(AGE_ROWS.length / agePageSize))
+  const paginatedRows = useMemo(() => {
+    return AGE_ROWS.slice((agePage - 1) * agePageSize, agePage * agePageSize)
+  }, [agePage, agePageSize])
 
   const createReport = () => {
     const current = new Date().toISOString().slice(0, 7)
@@ -188,7 +196,7 @@ export default function PatientVolumeReport({
                 </tr>
               </thead>
               <tbody>
-                {AGE_ROWS.map((row) => (
+                {paginatedRows.map((row) => (
                   <tr className="border-t border-slate-100 text-sm text-slate-600" key={row[0]}>
                     <td className={`${TD} font-semibold text-slate-800`}>{row[0]}</td>
                     <td className={`${TD} text-right`}>{row[1]}</td>
@@ -199,6 +207,16 @@ export default function PatientVolumeReport({
                 ))}
               </tbody>
             </table>
+            <Pagination
+              currentPage={agePage}
+              totalPages={totalAgePages}
+              totalItems={AGE_ROWS.length}
+              pageSize={agePageSize}
+              onPageChange={setAgePage}
+              onPageSizeChange={setAgePageSize}
+              pageSizeOptions={[5, 10, 20]}
+              itemLabel="nhóm tuổi"
+            />
           </ReportPanel>
         </div>
       ) : null}

@@ -35,19 +35,19 @@ export default function ReportsPage({ user }: { user: AuthUser }) {
             role="tab"
             aria-selected={active === report.id}
             onClick={() => setActive(report.id)}
-            className={`shrink-0 rounded-lg border px-3 py-2 text-left transition ${
+            className={`shrink-0 cursor-pointer rounded-lg border px-3.5 py-2 text-left transition-colors duration-150 ${
               active === report.id
-                ? "border-emerald-300 bg-emerald-50 text-emerald-800"
-                : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                ? "border-brand-primary bg-brand-surface text-brand-deep"
+                : "border-border-strong bg-surface text-text-secondary hover:bg-subsurface"
             }`}
           >
-            <span className="block text-xs font-bold">{report.label}</span>
-            <span className="block text-[10px] font-bold text-slate-400">
+            <span className="block font-heading text-xs font-bold">{report.label}</span>
+            <span className="mt-0.5 block font-mono text-[11px] font-semibold text-text-muted">
               {report.code}
             </span>
           </button>
         ))}
-        <div className="ml-auto hidden shrink-0 self-center text-xs text-slate-400 lg:block">
+        <div className="ml-auto hidden shrink-0 self-center text-xs text-text-muted lg:block">
           Nhật ký kiểm toán (RPT-05) nằm ở tab riêng
         </div>
       </div>

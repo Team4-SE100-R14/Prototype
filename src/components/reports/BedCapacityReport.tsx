@@ -11,6 +11,7 @@ import { exportReportCsv } from "../../lib/reportExport"
 import Button from "../ui/Button"
 import FieldLabel from "../ui/FieldLabel"
 import NamedIcon from "../ui/NamedIcon"
+import Pagination from "../ui/Pagination"
 import {
   BarList,
   EmptyReport,
@@ -44,6 +45,8 @@ export default function BedCapacityReport({
   const state = useInpatient()
   const [department, setDepartment] = useState<Department | "">("")
   const [applied, setApplied] = useState<Department | "">("")
+  const [stayPage, setStayPage] = useState(1)
+  const [stayPageSize, setStayPageSize] = useState(5)
 
   const data = useMemo(() => {
     const beds = state.beds.filter((bed) => !applied || bed.department === applied)
@@ -112,6 +115,11 @@ export default function BedCapacityReport({
       ),
     )
   }
+
+  const totalStayPages = Math.max(1, Math.ceil(data.stays.length / stayPageSize))
+  const paginatedStays = useMemo(() => {
+    return data.stays.slice((stayPage - 1) * stayPageSize, stayPage * stayPageSize)
+  }, [data.stays, stayPage, stayPageSize])
 
   const generatedAt = new Date().toLocaleString("vi-VN")
 
@@ -211,7 +219,7 @@ export default function BedCapacityReport({
                     </td>
                   </tr>
                 )}
-                {data.stays.map(({ record, stay }, index) => (
+                {paginatedStays.map(({ record, stay }, index) => (
                   <tr
                     className="border-t border-slate-100 text-sm text-slate-600"
                     key={`${record.id}-${stay.bedCode}-${index}`}
@@ -234,6 +242,16 @@ export default function BedCapacityReport({
                 ))}
               </tbody>
             </table>
+            <Pagination
+              currentPage={stayPage}
+              totalPages={totalStayPages}
+              totalItems={data.stays.length}
+              pageSize={stayPageSize}
+              onPageChange={setStayPage}
+              onPageSizeChange={setStayPageSize}
+              pageSizeOptions={[5, 10, 20]}
+              itemLabel="lượt sử dụng"
+            />
           </ReportPanel>
         </div>
       )}

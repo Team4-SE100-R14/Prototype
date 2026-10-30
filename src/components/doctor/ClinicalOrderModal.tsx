@@ -1,6 +1,6 @@
 import { useState } from "react"
 import Button from "../ui/Button"
-import Icon from "../ui/Icon"
+import { Check, X } from "lucide-react"
 import Modal from "../ui/Modal"
 import { TextInput } from "../ui/TextInput"
 import type { ClinicalPatient } from "../../lib/clinicalWorkflow"
@@ -89,9 +89,7 @@ export default function ClinicalOrderModal({
           onClick={onClose}
           aria-label="Đóng hộp thoại"
         >
-          <Icon className="h-5 w-5">
-            <path d="M6 6l12 12M18 6 6 18" />
-          </Icon>
+          <X aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
         </Button>
       </div>
 
@@ -184,9 +182,7 @@ export default function ClinicalOrderModal({
                     }`}
                   >
                     {checked && (
-                      <Icon className="h-3.5 w-3.5">
-                        <path d="m4 12 5 5L20 6" />
-                      </Icon>
+                      <Check aria-hidden="true" strokeWidth={2} className="h-3.5 w-3.5" />
                     )}
                   </span>
                   <span className="font-normal">{service}</span>

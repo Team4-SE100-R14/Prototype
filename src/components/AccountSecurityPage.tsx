@@ -4,7 +4,7 @@ import useMfaRegistry from "../hooks/useMfaRegistry"
 import { availableCodes, readMfaState } from "../lib/mfaLifecycle"
 import TopNav from "./TopNav"
 import Button from "./ui/Button"
-import Icon from "./ui/Icon"
+import { ShieldCheck, User } from "lucide-react"
 import {
   NewRecoveryCodesModal,
   RecoveryStepUpModal,
@@ -50,10 +50,7 @@ export default function AccountSecurityPage({
         </div>
         <div className="mb-5 flex items-center gap-3 rounded-xl border border-border-subtle bg-surface p-5 shadow-sm">
           <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-brand-surface text-brand-deep">
-            <Icon>
-              <circle cx="12" cy="8" r="4" />
-              <path d="M4 21v-2a8 8 0 0116 0v2" />
-            </Icon>
+            <User aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
           </div>
           <div>
             <p className="text-sm font-semibold text-text-primary">
@@ -75,10 +72,7 @@ export default function AccountSecurityPage({
           </div>
           <div className="space-y-5 p-5">
             <div className="flex items-start gap-3">
-              <Icon className="mt-1 h-5 w-5 shrink-0 text-brand-deep">
-                <path d="M12 3l7 3v5c0 4.7-2.8 8-7 10-4.2-2-7-5.3-7-10V6l7-3z" />
-                <path d="M9 12l2 2 4-4" />
-              </Icon>
+              <ShieldCheck aria-hidden="true" strokeWidth={1.75} className="mt-1 h-5 w-5 shrink-0 text-brand-deep" />
               <div>
                 <h3 className="text-sm font-semibold text-text-primary">
                   Mã khôi phục dự phòng

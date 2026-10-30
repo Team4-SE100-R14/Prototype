@@ -1,4 +1,4 @@
-import { useCallback, useState, type ReactNode } from "react"
+import { useCallback, useState } from "react"
 import type { AuthUser } from "../../App"
 import WardVitalWorkspace, {
   type WardWorkspaceStatus,
@@ -10,7 +10,15 @@ import InpatientWorkspace from "../inpatient/InpatientWorkspace"
 import PrescriptionWorkspace from "../prescription/PrescriptionWorkspace"
 import TopNav from "../TopNav"
 import Button from "../ui/Button"
-import Icon from "../ui/Icon"
+import {
+  Bed,
+  Bell,
+  FileText,
+  List,
+  Stethoscope,
+  Volume2,
+  type LucideIcon,
+} from "lucide-react"
 import Modal from "../ui/Modal"
 
 interface Props {
@@ -28,57 +36,32 @@ type NavigationIntent = {
 const NAV_ITEMS: Array<{
   id: Workspace
   label: string
-  icon: ReactNode
+  icon: LucideIcon
 }> = [
   {
     id: "clinical",
     label: "Khám và chẩn đoán",
-    icon: (
-      <>
-        <path d="M9 3h6M10 3v5l-3 5a5 5 0 0 0 10 0l-3-5V3" />
-        <path d="M8 18h8" />
-      </>
-    ),
+    icon: Stethoscope,
   },
   {
     id: "prescription",
     label: "Kê đơn thuốc",
-    icon: (
-      <>
-        <path d="M9 4h6a2 2 0 0 1 2 2v14H7V6a2 2 0 0 1 2-2Z" />
-        <path d="M9 9h6M9 13h6M9 17h3" />
-      </>
-    ),
+    icon: FileText,
   },
   {
     id: "inpatient",
     label: "Nội trú",
-    icon: (
-      <>
-        <path d="M4 5v14M20 10v9M4 15h16M6 10h12a2 2 0 0 1 2 2v3H4v-3a2 2 0 0 1 2-2Z" />
-        <path d="M7 10V8h4v2" />
-      </>
-    ),
+    icon: Bed,
   },
   {
     id: "beds",
     label: "Bảng giường bệnh",
-    icon: (
-      <>
-        <path d="M3 18v-8m18 8v-5a3 3 0 0 0-3-3H9v8m-6-5h18" />
-        <path d="M6 10V7h3a3 3 0 0 1 3 3" />
-      </>
-    ),
+    icon: Bed,
   },
   {
     id: "alerts",
     label: "Danh sách cảnh báo",
-    icon: (
-      <>
-        <path d="M8 6h13M8 12h13M8 18h13" />
-        <path d="M3 6h.01M3 12h.01M3 18h.01" />
-      </>
-    ),
+    icon: List,
   },
 ]
 
@@ -174,7 +157,7 @@ export default function PhysicianDashboard(props: Props) {
             }`}
             aria-current={active ? "page" : undefined}
           >
-            <Icon className="h-5 w-5 shrink-0">{item.icon}</Icon>
+            <item.icon aria-hidden="true" strokeWidth={1.75} className="h-5 w-5 shrink-0" />
             <span className="min-w-0 flex-1">{item.label}</span>
             {item.id === "alerts" && wardStatus.unread > 0 && (
               <span className="rounded-full bg-critical px-2 py-0.5 text-xs text-surface">
@@ -217,19 +200,11 @@ export default function PhysicianDashboard(props: Props) {
               onClick={() => setSoundEnabled((enabled) => !enabled)}
             >
               <span className={wardStatus.bellShake ? "animate-bell" : ""}>
-                <Icon className="h-4 w-4">
-                  {soundEnabled ? (
-                    <>
-                      <path d="M11 5 6 9H2v6h4l5 4V5Z" />
-                      <path d="M15 9a4 4 0 0 1 0 6m3-9a8 8 0 0 1 0 12" />
-                    </>
-                  ) : (
-                    <>
-                      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
-                      <path d="M10 21h4" />
-                    </>
-                  )}
-                </Icon>
+                {soundEnabled ? (
+                  <Volume2 aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
+                ) : (
+                  <Bell aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
+                )}
               </span>
               Âm báo: {soundEnabled ? "Bật" : "Tắt"}
             </Button>
@@ -273,7 +248,7 @@ export default function PhysicianDashboard(props: Props) {
                     }`}
                     onClick={() => openWorkspace(item.id)}
                   >
-                    <Icon className="h-4 w-4">{item.icon}</Icon>
+                    <item.icon aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
                     {item.label}
                     {item.id === "alerts" && wardStatus.unread > 0 && (
                       <span className="rounded-full bg-critical px-1.5 py-0.5 text-xs text-surface">

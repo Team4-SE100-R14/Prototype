@@ -1,6 +1,6 @@
 import { useState } from "react"
 import Button from "../ui/Button"
-import Icon from "../ui/Icon"
+import { AlertTriangle, X } from "lucide-react"
 import Modal from "../ui/Modal"
 import { TextArea } from "../ui/TextInput"
 
@@ -43,9 +43,7 @@ export default function MedicalRecordAddendumModal({
           onClick={onClose}
           aria-label="Đóng hộp thoại"
         >
-          <Icon className="h-5 w-5">
-            <path d="M6 6l12 12M18 6 6 18" />
-          </Icon>
+          <X aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
         </Button>
       </div>
 
@@ -54,10 +52,7 @@ export default function MedicalRecordAddendumModal({
           id="medical-record-addendum-warning"
           className="flex items-start gap-3 rounded-lg border border-warning/30 bg-warning-bg p-4 text-sm leading-relaxed text-warning"
         >
-          <Icon className="mt-0.5 h-5 w-5 shrink-0">
-            <path d="M12 3 2.7 20h18.6L12 3Z" />
-            <path d="M12 9v4M12 17h.01" />
-          </Icon>
+          <AlertTriangle aria-hidden="true" strokeWidth={1.75} className="mt-0.5 h-5 w-5 shrink-0" />
           <div>
             <span className="font-bold">Lưu ý:</span> Phiếu khám gốc đã bị
             khóa bất biến. Bất kỳ thông tin bổ sung nào sẽ được lưu dưới dạng

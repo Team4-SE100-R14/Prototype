@@ -1,24 +1,19 @@
-import type { ReactNode } from "react"
+import type { LucideIcon, LucideProps } from "lucide-react"
 
 export default function Icon({
-  children,
+  icon: Component,
   className = "h-5 w-5",
-}: {
-  children: ReactNode
-  className?: string
+  strokeWidth = 1.75,
+  ...props
+}: LucideProps & {
+  icon: LucideIcon
 }) {
   return (
-    <svg
+    <Component
       aria-hidden="true"
+      strokeWidth={strokeWidth}
       className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      {children}
-    </svg>
+      {...props}
+    />
   )
 }
