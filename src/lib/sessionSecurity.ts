@@ -1,17 +1,20 @@
 import type { AuthUser, UserRole } from "../App"
 
-export const SESSION_DURATION = 30 * 60 * 1000
+export const SESSION_DURATION = 15 * 60 * 1000
 export const SESSION_KEY = "hpms-demo-session"
 export const AUDIT_KEY = "NhatKyHeThong"
 export const AUDIT_EVENT = "hpms-security-audit"
-
-export function inactivityMinutes(role: UserRole): number | null {
-  if (role === "admin") return 10
-  if (
-    ["physician", "nurse", "paraclinical_tech", "receptionist"].includes(role)
-  )
-    return 15
-  return null
+export const IDLE_WARNING_MS = 60_000
+export const IDLE_GRACE_MS = 30_000
+export function inactivityMinutes(_role: UserRole): number {
+  return (IDLE_WARNING_MS + IDLE_GRACE_MS) / 60_000
+}
+// Prototype refresh adapter. A production integration replaces this with its API.
+export async function refreshPrototypeSession(): Promise<number> {
+  await new Promise((resolve) => window.setTimeout(resolve, 250))
+  const expiry = Date.now() + SESSION_DURATION
+  saveExpiry(expiry)
+  return expiry
 }
 
 export function canAccessTreatment(role: UserRole): boolean {

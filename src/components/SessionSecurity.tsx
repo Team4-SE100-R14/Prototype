@@ -15,7 +15,9 @@ import {
   readExpiry,
   recordDeniedAccess,
   saveExpiry,
-  SESSION_DURATION,
+  IDLE_WARNING_MS,
+  IDLE_GRACE_MS,
+  refreshPrototypeSession,
 } from "../lib/sessionSecurity"
 import ForbiddenPage from "./ForbiddenPage"
 import SessionExpiryModal from "./SessionExpiryModal"
@@ -48,7 +50,7 @@ export default function SessionSecurity({
   username: string
   children: ReactNode
   onLogout: () => void
-  validatePassword: (password: string) => boolean
+  validatePassword: (password: string) => Promise<boolean>
   staff: StaffAccount[]
 }) {
   const minutes = inactivityMinutes(user.role)
@@ -70,7 +72,15 @@ export default function SessionSecurity({
   const [auditSaved, setAuditSaved] = useState(true)
   const [accessNotice, setAccessNotice] = useState(false)
   const seconds = Math.max(0, Math.ceil((expiresAt - now) / 1000))
-  const warning = seconds <= 60
+  const idleDeadline = lastActivity.current + IDLE_WARNING_MS + IDLE_GRACE_MS
+  const idleWarning = now >= lastActivity.current + IDLE_WARNING_MS
+  const warning = idleWarning || seconds <= 30
+  const warningSeconds = Math.max(
+    0,
+    Math.ceil((Math.min(expiresAt, idleDeadline) - now) / 1000),
+  )
+  const [renewing, setRenewing] = useState(false)
+  const renewingRef = useRef(false)
   const ended = useRef(false)
 
   const markActivity = useCallback(() => {
@@ -105,6 +115,10 @@ export default function SessionSecurity({
   useEffect(() => {
     if (locked || warning) return
     const active = () => {
+      if (Date.now() - lastActivity.current >= IDLE_WARNING_MS) {
+        setNow(Date.now())
+        return
+      }
       if (Date.now() - lastActivity.current > 1000) markActivity()
     }
     const events = [
@@ -138,7 +152,7 @@ export default function SessionSecurity({
       simulateExpiry: () => {
         const timestamp = Date.now()
         setNow(timestamp)
-        setExpiresAt(timestamp + 58000)
+        setExpiresAt(timestamp + 28000)
       },
       checkAccess: () => {
         if (canAccessTreatment(user.role)) {
@@ -163,33 +177,52 @@ export default function SessionSecurity({
     [minutes, activityKey, user],
   )
 
-  const unlock = (password: string) => {
+  const unlock = async (password: string) => {
     if (Date.now() >= expiresAt) {
       onLogout()
       return false
     }
-    if (!validatePassword(password)) return false
+    if (!(await validatePassword(password))) return false
     markActivity()
     setNow(Date.now())
     setLocked(false)
     return true
   }
-
-  const renew = () => {
-    const timestamp = Date.now()
-    if (timestamp >= expiresAt) {
-      onLogout()
+  const renew = async () => {
+    if (renewingRef.current) return
+    if (
+      Date.now() >= expiresAt ||
+      Date.now() >= lastActivity.current + IDLE_WARNING_MS + IDLE_GRACE_MS
+    ) {
+      setLocked(true)
       return
     }
-    markActivity()
-    setNow(timestamp)
-    setExpiresAt(timestamp + SESSION_DURATION)
+    renewingRef.current = true
+    setRenewing(true)
+    try {
+      const expiry = await refreshPrototypeSession()
+      if (
+        Date.now() >= expiresAt ||
+        Date.now() >= lastActivity.current + IDLE_WARNING_MS + IDLE_GRACE_MS
+      ) {
+        setLocked(true)
+        return
+      }
+      markActivity()
+      setNow(Date.now())
+      setExpiresAt(expiry)
+    } finally {
+      renewingRef.current = false
+      setRenewing(false)
+    }
   }
 
   return (
     <SecurityContext.Provider value={controls}>
       <div
-        hidden={locked}
+        className={
+          locked ? "blur-lg pointer-events-none select-none" : undefined
+        }
         inert={locked || warning}
         aria-hidden={locked || warning ? true : undefined}
       >
@@ -247,7 +280,8 @@ export default function SessionSecurity({
       ) : (
         warning && (
           <SessionExpiryModal
-            seconds={seconds}
+            seconds={warningSeconds}
+            renewing={renewing}
             onLogout={onLogout}
             onRenew={renew}
           />

@@ -14,7 +14,7 @@ export function RecoveryStepUpModal({
   onGenerated,
 }: {
   userId: string
-  validatePassword: (password: string) => boolean
+  validatePassword: (password: string) => Promise<boolean>
   onClose: () => void
   onGenerated: (codes: string[]) => void
 }) {
@@ -23,10 +23,10 @@ export function RecoveryStepUpModal({
   const [visible, setVisible] = useState(false)
   const [error, setError] = useState("")
   const [busy, setBusy] = useState(false)
-  const submit = (event: FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault()
     if (busy) return
-    if (!validatePassword(password) || otp !== PROTOTYPE_MFA_CODE) {
+    if (!(await validatePassword(password)) || otp !== PROTOTYPE_MFA_CODE) {
       setError(
         "Mật khẩu hoặc mã OTP không chính xác. Mã phục hồi hiện tại của bạn vẫn được giữ nguyên.",
       )
@@ -34,7 +34,7 @@ export function RecoveryStepUpModal({
     }
     setBusy(true)
     try {
-      onGenerated(regenerateRecoveryCodes(userId))
+      onGenerated(await regenerateRecoveryCodes(userId))
     } catch {
       setBusy(false)
       setError(
@@ -86,9 +86,17 @@ export function RecoveryStepUpModal({
                 className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-text-muted"
               >
                 {visible ? (
-                  <EyeOff aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
+                  <EyeOff
+                    aria-hidden="true"
+                    strokeWidth={1.75}
+                    className="h-5 w-5"
+                  />
                 ) : (
-                  <Eye aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
+                  <Eye
+                    aria-hidden="true"
+                    strokeWidth={1.75}
+                    className="h-5 w-5"
+                  />
                 )}
               </button>
             </div>
@@ -206,8 +214,9 @@ export function NewRecoveryCodesModal({
           Đã kích hoạt: 8/8 mã khả dụng (Mỗi mã dùng 1 lần duy nhất)
         </p>
         <p className="text-sm leading-relaxed text-text-muted">
-          Lưu trữ 8 mã này ở nơi bảo mật. Mỗi mã gồm 10 ký tự và chỉ có giá trị
-          sử dụng một lần (Single-use) để đăng nhập khẩn cấp khi mất điện thoại.
+          Lưu trữ 8 mã này ở nơi bảo mật. Mỗi mã gồm 10 ký tự chữ/số và chỉ có giá
+          trị sử dụng một lần (Single-use) để đăng nhập khẩn cấp khi mất điện
+          thoại.
         </p>
         <div
           className="grid grid-cols-2 gap-2 sm:gap-3"
@@ -237,7 +246,11 @@ export function NewRecoveryCodesModal({
             onClick={download}
             className="flex items-center justify-center gap-2 border border-border-subtle"
           >
-            <Download aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
+            <Download
+              aria-hidden="true"
+              strokeWidth={1.75}
+              className="h-4 w-4"
+            />
             Tải về tệp văn bản (.txt)
           </Button>
         </div>

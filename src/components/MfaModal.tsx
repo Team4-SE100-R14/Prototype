@@ -1,3 +1,4 @@
+import { NewRecoveryCodesModal } from "./RecoveryCodesModals"
 import { useEffect, useRef, useState, type FormEvent } from "react"
 import QRCode from "qrcode"
 import type { AuthUser } from "../App"
@@ -11,7 +12,11 @@ import {
 import { AlertCircle, Copy, ShieldCheck, X } from "lucide-react"
 import Modal from "./ui/Modal"
 import Button from "./ui/Button"
-import { consumeRecoveryCode, normalizeRecoveryCode } from "../lib/mfaLifecycle"
+import {
+  consumeRecoveryCode,
+  normalizeRecoveryCode,
+  regenerateRecoveryCodes,
+} from "../lib/mfaLifecycle"
 import { TextInput } from "./ui/TextInput"
 
 const ERROR_MESSAGE =
@@ -22,7 +27,9 @@ const INPUT =
   "w-full rounded-lg border border-border-strong bg-surface px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-brand-primary focus:outline-none focus:ring-3 focus:ring-brand-primary/20"
 
 function Shield() {
-  return <ShieldCheck aria-hidden="true" strokeWidth={1.75} className="h-6 w-6" />
+  return (
+    <ShieldCheck aria-hidden="true" strokeWidth={1.75} className="h-6 w-6" />
+  )
 }
 
 export default function MfaModal({
@@ -38,8 +45,9 @@ export default function MfaModal({
   requireSetup?: boolean
   onSetupCompleted?: () => void
 }) {
+  const [newCodes, setNewCodes] = useState<string[] | null>(null)
   const [setup, setSetup] = useState(requireSetup)
-  const [setupRequired, setSetupRequired] = useState(requireSetup)
+  const [setupRequired] = useState(requireSetup)
   const [recovery, setRecovery] = useState(false)
   const [recoveryCode, setRecoveryCode] = useState("")
   const [digits, setDigits] = useState<string[]>(Array(6).fill(""))
@@ -105,7 +113,7 @@ export default function MfaModal({
     inputs.current[Math.min(start + numbers.length, 5)]?.focus()
   }
 
-  const submit = (event: FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault()
     if (verifying.current) return
     verifying.current = true
@@ -114,7 +122,7 @@ export default function MfaModal({
     try {
       const valid =
         !setup && recovery
-          ? consumeRecoveryCode(user.id, recoveryCode)
+          ? await consumeRecoveryCode(user.id, recoveryCode)
           : (setup ? setupCode : digits.join("")) === PROTOTYPE_MFA_CODE
       if (!mounted.current) return
       if (!valid) {
@@ -126,12 +134,7 @@ export default function MfaModal({
         return
       }
       if (setup) {
-        onSetupCompleted?.()
-        setSetupRequired(false)
-        switchView(false)
-        setNotice(
-          "Đã hoàn tất thiết lập minh họa. Nhập lại mã 481920 để vào hệ thống.",
-        )
+        setNewCodes(await regenerateRecoveryCodes(user.id))
       } else {
         onVerified()
       }
@@ -155,7 +158,22 @@ export default function MfaModal({
         )
     }
   }
-
+  if (newCodes)
+    return (
+      <NewRecoveryCodesModal
+        codes={newCodes}
+        username={user.id}
+        onDone={() => {
+          try {
+            onSetupCompleted?.()
+            onVerified()
+          } catch {
+            setNewCodes(null)
+            setError("Không thể lưu thiết lập MFA. Vui lòng thử lại.")
+          }
+        }}
+      />
+    )
   return (
     <Modal titleId={titleId} descriptionId="mfa-description" onClose={onCancel}>
       <div className="flex items-start gap-3 border-b border-border-subtle px-6 py-5">
@@ -253,7 +271,11 @@ export default function MfaModal({
                       onClick={copySecret}
                       className={`${GHOST} flex shrink-0 items-center justify-center gap-2 border border-border-subtle`}
                     >
-                      <Copy aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
+                      <Copy
+                        aria-hidden="true"
+                        strokeWidth={1.75}
+                        className="h-4 w-4"
+                      />
                       {copied ? "Đã sao chép" : "Sao chép mã"}
                     </button>
                   </div>
@@ -312,7 +334,7 @@ export default function MfaModal({
                 value={recoveryCode}
                 autoComplete="off"
                 maxLength={11}
-                placeholder="7K2P-9M4X10"
+                placeholder="ABCD-EFGHJK"
                 className="font-mono tracking-wider"
                 onChange={(event) => {
                   setRecoveryCode(
@@ -325,7 +347,7 @@ export default function MfaModal({
                 required
               />
               <p className="mt-2 text-xs text-text-muted">
-                Mỗi mã chỉ dùng một lần. Dấu gạch nối không tính vào 10 ký tự.
+                Mỗi mã chỉ dùng một lần. Nhập đủ 10 ký tự chữ/số (không tính dấu gạch nối).
               </p>
             </div>
           ) : (
@@ -450,7 +472,11 @@ export default function MfaModal({
               role="alert"
               className="flex items-start gap-3 rounded-lg border border-critical-border bg-critical-bg p-4 text-sm leading-relaxed text-critical"
             >
-              <AlertCircle aria-hidden="true" strokeWidth={1.75} className="mt-0.5 h-5 w-5 shrink-0" />
+              <AlertCircle
+                aria-hidden="true"
+                strokeWidth={1.75}
+                className="mt-0.5 h-5 w-5 shrink-0"
+              />
               <p>{error}</p>
             </div>
           )}
@@ -514,7 +540,9 @@ export default function MfaModal({
               (setup
                 ? setupCode.length !== 6
                 : recovery
-                  ? normalizeRecoveryCode(recoveryCode).length !== 10
+                  ? ![8, 10].includes(
+                      normalizeRecoveryCode(recoveryCode).length,
+                    )
                   : digits.some((digit) => !digit))
             }
           >
