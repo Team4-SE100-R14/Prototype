@@ -3,17 +3,6 @@ import { AUDIT_EVENT, AUDIT_KEY, readSecurityAudit } from "./sessionSecurity"
 
 export const MFA_STORAGE_KEY = "hpms-mfa-lifecycle"
 export const MFA_CHANGED_EVENT = "hpms-mfa-changed"
-export const SAMPLE_RECOVERY_CODES = [
-  "7K2P-9M4X10",
-  "B4R8-2W9Z45",
-  "H1N6-8D3E88",
-  "5J3Y-7P2S31",
-  "3F8A-6L1Q99",
-  "9V5X-4T7C12",
-  "2E7B-8K4M70",
-  "6W1Z-5N9R55",
-]
-
 export interface StaffAccount {
   user: AuthUser
   username: string
@@ -60,7 +49,7 @@ export function readMfaState(id: string): MfaState {
       used: [],
       batch: 0,
       sessionEpoch: 0,
-      needsSetup: false,
+      needsSetup: true,
     }
   )
 }
@@ -78,32 +67,36 @@ export const normalizeRecoveryCode = (code: string) =>
 export const availableCodes = (state: MfaState) =>
   state.codes.filter((code) => !state.used.includes(code)).length
 
-export function regenerateRecoveryCodes(id: string): string[] {
+async function hashRecoveryCode(value: string): Promise<string> {
+  const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(normalizeRecoveryCode(value)))
+  return Array.from(new Uint8Array(bytes), b => b.toString(16).padStart(2, "0")).join("")
+}
+
+export async function regenerateRecoveryCodes(id: string): Promise<string[]> {
   const previous = readMfaState(id)
-  let codes = [...SAMPLE_RECOVERY_CODES]
-  if (previous.batch > 0) {
-    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-    const unique = new Set<string>()
-    while (unique.size < 8) {
-      const bytes = crypto.getRandomValues(new Uint8Array(10))
-      const raw = Array.from(
-        bytes,
-        (byte) => alphabet[byte % alphabet.length],
-      ).join("")
-      const code = `${raw.slice(0, 4)}-${raw.slice(4)}`
-      if (!previous.codes.includes(code)) unique.add(code)
-    }
-    codes = [...unique]
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+  const unique = new Set<string>()
+  while (unique.size < 8) {
+    const bytes = crypto.getRandomValues(new Uint8Array(10))
+    const raw = Array.from(
+      bytes,
+      (byte) => alphabet[byte % alphabet.length],
+    ).join("")
+    const code = `${raw.slice(0, 4)}-${raw.slice(4)}`
+    if (!previous.codes.includes(code)) unique.add(code)
   }
-  saveMfaState(id, { ...previous, codes, used: [], batch: previous.batch + 1 })
+  const codes = [...unique]
+  const hashes = await Promise.all(codes.map(hashRecoveryCode))
+  saveMfaState(id, { ...previous, codes: hashes, used: [], batch: previous.batch + 1 })
   return codes
 }
 
-export function consumeRecoveryCode(id: string, value: string): boolean {
+export async function consumeRecoveryCode(id: string, value: string): Promise<boolean> {
+  const digest = await hashRecoveryCode(value)
   const state = readMfaState(id)
   if (state.needsSetup) return false
   const code = state.codes.find(
-    (item) => normalizeRecoveryCode(item) === normalizeRecoveryCode(value),
+    (item) => item === digest || normalizeRecoveryCode(item) === normalizeRecoveryCode(value),
   )
   if (!code || state.used.includes(code)) return false
   saveMfaState(id, { ...state, used: [...state.used, code] })

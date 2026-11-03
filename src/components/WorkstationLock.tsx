@@ -15,7 +15,7 @@ export default function WorkstationLock({
   user: AuthUser
   username: string
   onLogout: () => void
-  onUnlock: (password: string) => boolean
+  onUnlock: (password: string) => Promise<boolean>
 }) {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -31,10 +31,10 @@ export default function WorkstationLock({
     })(),
   )
 
-  const submit = (event: FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault()
     if (!password) return
-    if (onUnlock(password)) {
+    if (await onUnlock(password)) {
       try {
         sessionStorage.removeItem(attemptsKey)
       } catch {
@@ -82,7 +82,7 @@ export default function WorkstationLock({
             className="mt-3 text-center text-sm leading-relaxed text-text-muted"
           >
             Máy trạm không có thao tác trong thời gian quy định. Giao diện tự
-            động khóa để bảo mật dữ liệu bệnh án (CON-06).
+            động khóa để bảo mật dữ liệu bệnh án (REQ-AUTH-03).
           </p>
           <div className="mt-6 flex items-center justify-center gap-2 rounded-full border border-border-subtle bg-canvas px-4 py-3 text-center text-xs font-medium text-text-secondary">
             <User aria-hidden="true" strokeWidth={1.75} className="h-4 w-4 shrink-0" />

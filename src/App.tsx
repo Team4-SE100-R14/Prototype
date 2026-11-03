@@ -1,3 +1,4 @@
+import { verifyPatientPassword, PATIENT_PASSWORD_KEY } from "./lib/patientPassword"
 import { useEffect, useState } from 'react'
 import LoginPage from './components/LoginPage'
 import MfaModal from './components/MfaModal'
@@ -101,10 +102,10 @@ export default function App() {
     setPendingMfa(null)
   }
 
-  const handleLogin = (username: string, password: string, remember: boolean): string | null => {
+  const handleLogin = async (username: string, password: string, remember: boolean): Promise<string | null> => {
     const entry = Object.prototype.hasOwnProperty.call(DEMO_USERS, username) ? DEMO_USERS[username] : undefined
     if (!entry) return 'Tên đăng nhập không tồn tại.'
-    if (entry.password !== password) return 'Mật khẩu không chính xác.'
+    if (!(entry.user.role === 'patient' ? await verifyPatientPassword(password, entry.password) : entry.password === password)) return 'Mật khẩu không chính xác.'
     if (MFA_ROLES.has(entry.user.role)) {
       setPendingMfa({ user: entry.user, remember, epoch: readMfaState(entry.user.id).sessionEpoch })
     } else {
@@ -132,7 +133,7 @@ export default function App() {
     if (!user) return
     const epoch = readMfaState(user.id).sessionEpoch
     const check = () => { if (readMfaState(user.id).sessionEpoch !== epoch) handleLogout() }
-    const storage = (event: StorageEvent) => { if (event.key === MFA_STORAGE_KEY || event.key === null) check() }
+    const storage = (event: StorageEvent) => { if (user.role === 'patient' && event.key === PATIENT_PASSWORD_KEY) { handleLogout(); return }; if (event.key === MFA_STORAGE_KEY || event.key === null) check() }
     window.addEventListener(MFA_CHANGED_EVENT, check)
     window.addEventListener('storage', storage)
     return () => { window.removeEventListener(MFA_CHANGED_EVENT, check); window.removeEventListener('storage', storage) }
@@ -159,7 +160,7 @@ export default function App() {
     department: entry.user.id === 'NV-26-004' ? 'Cấp cứu & Triage' : entry.user.department || 'Chưa phân khoa',
   })).sort((a, b) => Number(b.user.id === 'NV-26-004') - Number(a.user.id === 'NV-26-004'))
   const secure = (dashboard: React.ReactNode) => (
-    <SessionSecurity key={user.id} user={user} staff={staff} username={account?.[0] || user.id} onLogout={handleLogout} validatePassword={password => !!account && account[1].password === password}>
+    <SessionSecurity key={user.id} user={user} staff={staff} username={account?.[0] || user.id} onLogout={handleLogout} validatePassword={async password => !!account && (user.role === 'patient' ? await verifyPatientPassword(password, account[1].password) : account[1].password === password)}>
       {dashboard}
     </SessionSecurity>
   )

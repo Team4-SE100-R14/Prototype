@@ -6,9 +6,11 @@ const keepWarning = () => {}
 
 export default function SessionExpiryModal({
   seconds,
+  renewing = false,
   onLogout,
   onRenew,
 }: {
+  renewing?: boolean
   seconds: number
   onLogout: () => void
   onRenew: () => void
@@ -37,8 +39,8 @@ export default function SessionExpiryModal({
           className="rounded-lg border border-warning/20 bg-warning-bg px-4 py-3 text-sm font-medium leading-relaxed text-warning"
         >
           Phiên làm việc sẽ kết thúc sau:{" "}
-          <strong className="font-mono">{seconds} giây</strong> do hết hạn
-          Access Token.
+          <strong className="font-mono">{seconds} giây</strong> do không hoạt
+          động hoặc hết hạn phiên.
         </p>
         <p
           id="expiry-description"
@@ -51,7 +53,9 @@ export default function SessionExpiryModal({
         <Button variant="ghost" onClick={onLogout}>
           Đăng xuất ngay
         </Button>
-        <Button onClick={onRenew}>Gia hạn phiên làm việc</Button>
+        <Button onClick={onRenew} disabled={renewing}>
+          {renewing ? "Đang gia hạn…" : "Gia hạn phiên làm việc"}
+        </Button>
       </div>
     </Modal>
   )

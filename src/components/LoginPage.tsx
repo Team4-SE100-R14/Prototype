@@ -1,3 +1,4 @@
+import PatientPasswordReset from "./PatientPasswordReset"
 import { useEffect, useState, type FormEvent } from "react"
 import type { AuthUser, UserRole } from "../App"
 import {
@@ -20,7 +21,7 @@ interface Props {
     username: string,
     password: string,
     remember: boolean,
-  ) => string | null
+  ) => Promise<string | null>
   demoUsers: Record<string, DemoUser>
 }
 
@@ -32,7 +33,11 @@ const ROLES: {
   { username: "admin", role: "admin", label: "Quản trị viên" },
   { username: "dat.nguyen", role: "physician", label: "Bác sĩ" },
   { username: "mai.le", role: "nurse", label: "Điều dưỡng" },
-  { username: "tuan.cls", role: "paraclinical_tech", label: "KTV Cận lâm sàng" },
+  {
+    username: "tuan.cls",
+    role: "paraclinical_tech",
+    label: "KTV Cận lâm sàng",
+  },
   { username: "lan.tiepdon", role: "receptionist", label: "Tiếp đón" },
   { username: "bn-26-0089", role: "patient", label: "Bệnh nhân" },
 ]
@@ -82,6 +87,7 @@ export default function LoginPage({ onLogin, demoUsers }: Props) {
           demoUsers[key].user.role === "patient" ? "bn" : "nv"
         }-${demoUsers[key].user.id.toLowerCase()}` === account,
     ) || account
+  const patientRecoveryAllowed = selected === "bn-26-0089" && demoUsers[canonicalAccount]?.user.role === "patient"
   const lockedUntil = attempts[canonicalAccount]?.lockedUntil || 0
   const secondsLeft = Math.max(0, Math.ceil((lockedUntil - now) / 1000))
   const countdown = `${Math.floor(secondsLeft / 60)
@@ -113,12 +119,12 @@ export default function LoginPage({ onLogin, demoUsers }: Props) {
     setNow(Date.now())
   }
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const timestamp = Date.now()
     setNow(timestamp)
     if ((attempts[canonicalAccount]?.lockedUntil || 0) > timestamp) return
-    const result = onLogin(canonicalAccount, password, remember)
+    const result = await onLogin(canonicalAccount, password, remember)
     if (!result) {
       const next = { ...attempts }
       delete next[canonicalAccount]
@@ -151,7 +157,11 @@ export default function LoginPage({ onLogin, demoUsers }: Props) {
       <div className="w-full max-w-2xl">
         <div className="mb-7 flex items-center justify-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-deep text-surface shadow-clinical-xs">
-            <HeartPulse aria-hidden="true" strokeWidth={1.75} className="h-6 w-6" />
+            <HeartPulse
+              aria-hidden="true"
+              strokeWidth={1.75}
+              className="h-6 w-6"
+            />
           </div>
           <div>
             <p className="font-heading text-lg font-bold leading-tight text-text-primary">
@@ -270,9 +280,17 @@ export default function LoginPage({ onLogin, demoUsers }: Props) {
                     className="absolute inset-y-0 right-0 flex w-11 cursor-pointer items-center justify-center rounded-r-lg text-text-muted transition-colors hover:text-brand-deep"
                   >
                     {showPassword ? (
-                      <EyeOff aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
+                      <EyeOff
+                        aria-hidden="true"
+                        strokeWidth={1.75}
+                        className="h-5 w-5"
+                      />
                     ) : (
-                      <Eye aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" />
+                      <Eye
+                        aria-hidden="true"
+                        strokeWidth={1.75}
+                        className="h-5 w-5"
+                      />
                     )}
                   </button>
                 </div>
@@ -288,35 +306,26 @@ export default function LoginPage({ onLogin, demoUsers }: Props) {
                   />
                   Ghi nhớ phiên đăng nhập
                 </label>
-                <button
+                {patientRecoveryAllowed ? <button
                   type="button"
                   onClick={() => setShowRecovery((value) => !value)}
                   aria-expanded={showRecovery}
-                  aria-controls="password-recovery"
                   className="cursor-pointer font-heading font-semibold text-brand-deep hover:underline"
                 >
                   Quên mật khẩu?
-                </button>
+                </button> : <p className="text-xs text-text-muted">Quên mật khẩu nhân viên? Liên hệ Quản trị viên để xác minh danh tính.</p>}
               </div>
-
-              {showRecovery && (
-                <div
-                  id="password-recovery"
-                  role="status"
-                  className="rounded-lg border border-brand-primary/30 bg-brand-surface p-3 text-sm leading-relaxed text-brand-deep"
-                >
-                  Vui lòng liên hệ Quản trị viên để xác minh danh tính và được
-                  hỗ trợ đặt lại mật khẩu.
-                </div>
-              )}
-
               {error && !secondsLeft && (
                 <div
                   id="login-error"
                   role="alert"
                   className="flex items-start gap-2 rounded-lg border border-cpoe-block-border bg-cpoe-block-bg p-3 text-sm text-cpoe-block"
                 >
-                  <AlertCircle aria-hidden="true" strokeWidth={1.75} className="h-5 w-5 shrink-0" />
+                  <AlertCircle
+                    aria-hidden="true"
+                    strokeWidth={1.75}
+                    className="h-5 w-5 shrink-0"
+                  />
                   <p>{error}</p>
                 </div>
               )}
@@ -327,7 +336,11 @@ export default function LoginPage({ onLogin, demoUsers }: Props) {
                 className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-brand-deep px-4 py-2.5 font-heading text-sm font-semibold text-surface shadow-clinical-xs transition-colors duration-150 hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-subsurface disabled:text-text-disabled"
               >
                 Đăng nhập vào hệ thống
-                <ArrowRight aria-hidden="true" strokeWidth={1.75} className="h-4 w-4" />
+                <ArrowRight
+                  aria-hidden="true"
+                  strokeWidth={1.75}
+                  className="h-4 w-4"
+                />
               </button>
 
               {secondsLeft > 0 && (
@@ -336,12 +349,18 @@ export default function LoginPage({ onLogin, demoUsers }: Props) {
                   role="alert"
                   className="flex items-start gap-3 rounded-lg border border-cpoe-block-border bg-cpoe-block-bg p-4 text-sm leading-relaxed text-cpoe-block"
                 >
-                  <Lock aria-hidden="true" strokeWidth={1.75} className="mt-0.5 h-5 w-5 shrink-0" />
+                  <Lock
+                    aria-hidden="true"
+                    strokeWidth={1.75}
+                    className="mt-0.5 h-5 w-5 shrink-0"
+                  />
                   <p>
                     Tài khoản bị tạm khóa 15 phút do nhập sai mật khẩu quá 5 lần
                     liên tiếp. Thời gian mở khóa còn lại:{" "}
-                    <strong className="font-mono tabular-nums">{countdown}</strong>. Liên hệ
-                    Quản trị viên để được mở khóa sớm.
+                    <strong className="font-mono tabular-nums">
+                      {countdown}
+                    </strong>
+                    . Liên hệ Quản trị viên để được mở khóa sớm.
                   </p>
                 </div>
               )}
@@ -355,13 +374,20 @@ export default function LoginPage({ onLogin, demoUsers }: Props) {
           </div>
         </section>
         <footer className="mt-6 flex items-start justify-center gap-2 text-center text-xs leading-relaxed text-text-muted">
-          <ShieldCheck aria-hidden="true" strokeWidth={1.75} className="mt-0.5 h-4 w-4 shrink-0" />
+          <ShieldCheck
+            aria-hidden="true"
+            strokeWidth={1.75}
+            className="mt-0.5 h-4 w-4 shrink-0"
+          />
           <p>
             Hệ thống Quản lý Bệnh viện &amp; Bệnh nhân HPMS - Tiêu chuẩn bảo mật
             TLS 1.3
           </p>
         </footer>
       </div>
+      {showRecovery && patientRecoveryAllowed && (
+        <PatientPasswordReset onClose={() => setShowRecovery(false)} />
+      )}
     </main>
   )
 }

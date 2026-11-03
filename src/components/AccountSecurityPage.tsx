@@ -21,7 +21,7 @@ export default function AccountSecurityPage({
   username: string
   onLogout: () => void
   onHome: () => void
-  validatePassword: (password: string) => boolean
+  validatePassword: (password: string) => Promise<boolean>
 }) {
   const registry = useMfaRegistry()
   const state = registry[user.id] || readMfaState(user.id)
